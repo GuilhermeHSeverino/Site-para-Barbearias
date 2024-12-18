@@ -6,4 +6,4 @@ class Services(models.Model):
     duration = models.DurationField()
     
     def __str__(self):
-        return self.name + ' - ' + self.price + ' - ' + self.duration
+        return self.name + ' - ' + str(self.price) + ' - ' + str(self.duration)
