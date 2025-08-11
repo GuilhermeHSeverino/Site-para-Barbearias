@@ -9,12 +9,9 @@ class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = "__all__"
-        read_only_fields = ['end_time']
+        read_only_fields = ['end_time','client_name']  # end_time será calculado automaticamente
 
     def validate(self, data):
-        """
-        Validação para garantir que não haja conflito de horário com outros agendamentos.
-        """
         barber = data.get('barber')
         start_time = data.get('start_time')
         service = data.get('service')  # Obtém o serviço para calcular a duração

@@ -20,7 +20,12 @@ function FormLogin({ route }) {
       const res = await api.post(route, { username, password });
       localStorage.setItem(ACCESS_TOKEN, res.data.access);
       localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-      navigate("/");
+      if (res.data.isSuperuser) {
+        navigate("/barbeiro");
+      } else {
+        navigate("/cliente");
+      }
+
     } catch (error) {
       alert(error);
     } finally {

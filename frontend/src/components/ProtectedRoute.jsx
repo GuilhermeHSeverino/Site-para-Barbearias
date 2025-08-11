@@ -47,7 +47,6 @@ function ProtectedRoute({ children }) {
     if (isAuthorized === null) {
         return <div>Loading...</div>
     }
-    // SE ESTEVER COM LOGIN ENTRA COMO TRUE SE NAO MANDA PARA TELA DE LOGIN
-    return isAuthorized ? children : <Navigate to="login" />
+    return isAuthorized ? children : <Navigate to="/login" />
 }
 export default ProtectedRoute

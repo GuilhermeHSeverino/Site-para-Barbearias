@@ -4,6 +4,10 @@ import Login from './pages/Login'
 import Home from './pages/Home'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ProtectedRoute from "./components/ProtectedRoute"
+import Cliente from './pages/Cliente';
+import AgendarServico from './components/cliente/AgendarServico';
+import EnviarFeedback from './components/cliente/EnviarFeedback';
+import MeusAgendamentos from './components/cliente/MeusAgendamentos';
 
 
 
@@ -21,15 +25,15 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+
           <Route path="/login" element={<Login />} />
+
+          <Route path="/cliente" element={<Cliente />} />
+          <Route path="/cliente/agendar" element={<AgendarServico />} />
+          <Route path="/cliente/feedback" element={<EnviarFeedback />} />
+          <Route path="/cliente/historico" element={<MeusAgendamentos />} />
+
         </Routes>
       </BrowserRouter>
 
