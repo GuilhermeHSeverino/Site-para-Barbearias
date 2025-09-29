@@ -8,6 +8,10 @@ import Cliente from './pages/Cliente';
 import AgendarServico from './components/cliente/AgendarServico';
 import EnviarFeedback from './components/cliente/EnviarFeedback';
 import MeusAgendamentos from './components/cliente/MeusAgendamentos';
+import MenuBarbeiro from './components/barbeiro/MenuBarbeiro';
+import AgendaBarbeiro from './components/barbeiro/AgendaBarbeiro';
+import EstoqueBarbeiro from './components/barbeiro/EstoqueBarbeiro';
+import Feedbacks from './components/barbeiro/Feedbacks';
 
 
 
@@ -33,6 +37,10 @@ function App() {
           <Route path="/cliente/agendar" element={<AgendarServico />} />
           <Route path="/cliente/feedback" element={<EnviarFeedback />} />
           <Route path="/cliente/historico" element={<MeusAgendamentos />} />
+          <Route path="/barbeiro/" element={<MenuBarbeiro />} />
+          <Route path="/barbeiro/agenda" element={<AgendaBarbeiro />} />
+          <Route path="/barbeiro/estoque" element={<EstoqueBarbeiro />} />
+          <Route path="/barbeiro/feedbacks" element={<Feedbacks />} />
 
         </Routes>
       </BrowserRouter>
