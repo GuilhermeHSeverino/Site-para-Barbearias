@@ -7,3 +7,10 @@ backend/staticfiles/
 .env
 .env.*
 !.env.example
+
+# Materiais acadêmicos e arquivos locais de apoio
+*.puml
+*.docx
+~$*.docx
+.clinerules
+ARCHITECTURE.md
