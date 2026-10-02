@@ -129,12 +129,6 @@ export default function AgendarServico() {
   const barbeiroSelecionado = barbeiros.find((item) => item.id === barbeiro);
   const servicoSelecionado = servicos.find((item) => item.id === servico);
 
-  const urlDaFoto = (photo) => {
-    if (!photo) return "";
-    if (photo.startsWith("http")) return photo;
-    return `${import.meta.env.VITE_API_URL}${photo}`;
-  };
-
   return (
     <div className="cliente-fluxo">
       <div className="cliente-fluxo-card">
@@ -158,7 +152,7 @@ export default function AgendarServico() {
                 <button key={item.id} type="button" onClick={() => setBarbeiro(item.id)} className={`cliente-fluxo-opcao ${barbeiro === item.id ? "ativa" : ""}`}>
                   <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ width: "42px", height: "42px", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "#2a2a2a", color: "#4ade80", fontSize: "18px", fontWeight: "700" }}>
-                      {item.photo ? <img src={urlDaFoto(item.photo)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.name?.[0]?.toUpperCase()}
+                      {item.name?.[0]?.toUpperCase()}
                     </span>
                     <span><strong>{item.name}</strong><small>Ver serviços disponíveis</small></span>
                   </span>

@@ -4,12 +4,6 @@ import { jwtDecode } from "jwt-decode";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 
-function urlDaFoto(photo) {
-    if (!photo) return "";
-    if (photo.startsWith("http")) return photo;
-    return `${import.meta.env.VITE_API_URL}${photo}`;
-}
-
 export default function PerfilPublicoBarbeiro() {
     const [perfil, setPerfil] = useState(null);
     const [servicos, setServicos] = useState([]);
@@ -43,8 +37,6 @@ export default function PerfilPublicoBarbeiro() {
     if (erro) return <p style={{ color: "#f87171", textAlign: "center", padding: "40px" }}>{erro}</p>;
 
     const nome = perfil?.name || "Seu nome";
-    const foto = urlDaFoto(perfil?.photo);
-
     return (
         <div style={{ width: "95%", maxWidth: "1000px", margin: "0 auto", padding: "32px 0 48px", color: "white" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "18px", marginBottom: "28px" }}>
@@ -56,8 +48,8 @@ export default function PerfilPublicoBarbeiro() {
             </div>
 
             <section style={{ background: "linear-gradient(135deg, #1b241f 0%, #171717 62%)", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "36px", display: "flex", alignItems: "center", gap: "28px", flexWrap: "wrap" }}>
-                <div style={{ width: "128px", height: "128px", borderRadius: "50%", overflow: "hidden", background: "#2a2a2a", border: "4px solid #22c55e", display: "flex", alignItems: "center", justifyContent: "center", color: "#22c55e", fontSize: "48px", fontWeight: "700" }}>
-                    {foto ? <img src={foto} alt={`Foto de ${nome}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : nome[0].toUpperCase()}
+                <div style={{ width: "128px", height: "128px", borderRadius: "50%", background: "#2a2a2a", border: "4px solid #22c55e", display: "flex", alignItems: "center", justifyContent: "center", color: "#22c55e", fontSize: "48px", fontWeight: "700" }}>
+                    {nome[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: "240px" }}>
                     <span style={{ color: "#4ade80", fontSize: "12px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase" }}>Barbeiro profissional</span>

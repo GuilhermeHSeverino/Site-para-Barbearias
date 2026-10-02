@@ -16,8 +16,6 @@ export default function ConfiguracoesBarbeiro() {
         break_start: "12:00",
         break_end: "13:00",
     });
-    const [photo, setPhoto] = useState(null);
-    const [photoPreview, setPhotoPreview] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const navigate = useNavigate();
@@ -25,18 +23,6 @@ export default function ConfiguracoesBarbeiro() {
     useEffect(() => {
         carregarPerfil();
     }, []);
-
-    useEffect(() => {
-        if (!photo) {
-            setPhotoPreview("");
-            return;
-        }
-
-        const previewUrl = URL.createObjectURL(photo);
-        setPhotoPreview(previewUrl);
-
-        return () => URL.revokeObjectURL(previewUrl);
-    }, [photo]);
 
     const carregarPerfil = async () => {
         setLoading(true);
@@ -52,7 +38,6 @@ export default function ConfiguracoesBarbeiro() {
                 work_end: data.work_end || "20:00",
                 break_start: data.break_start || "12:00",
                 break_end: data.break_end || "13:00",
-                photo: data.photo || "",
             });
         } catch (err) {
             console.error("Erro ao carregar perfil:", err);
@@ -76,16 +61,7 @@ export default function ConfiguracoesBarbeiro() {
                 break_end: formData.break_end,
             };
 
-            let data = perfilData;
-            if (photo) {
-                data = new FormData();
-                Object.entries(perfilData).forEach(([key, value]) => {
-                    data.append(key, value);
-                });
-                data.append("photo", photo);
-            }
-
-            await api.patch(PROFILE_ENDPOINT, data);
+            await api.patch(PROFILE_ENDPOINT, perfilData);
             alert("Perfil atualizado com sucesso!");
         } catch (err) {
             console.error("Erro ao salvar perfil:", err.response?.data || err);
@@ -132,36 +108,6 @@ export default function ConfiguracoesBarbeiro() {
                 margin: '0 auto'
             }}>
                 <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-                    {/* Foto de Perfil */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px' }}>
-                        <div style={{
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '50%',
-                            backgroundColor: '#2a2a2a',
-                            border: '3px solid #22c55e',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
-                        }}>
-                            {photoPreview || formData.photo ? (
-                                <img src={photoPreview || formData.photo} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                <span style={{ fontSize: '40px', color: '#444' }}>👤</span>
-                            )}
-                        </div>
-                        <div>
-                            <label style={{ color: 'white', fontWeight: '600', display: 'block', marginBottom: '8px' }}>Foto de Perfil</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setPhoto(e.target.files[0])}
-                                style={{ color: '#9ca3af', fontSize: '13px' }}
-                            />
-                        </div>
-                    </div>
 
                     {/* Info Básica */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
