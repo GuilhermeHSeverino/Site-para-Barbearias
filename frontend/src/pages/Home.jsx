@@ -1,17 +1,8 @@
-import Header from "../components/Header"
-import Servicos from "../components/home/Servicos"
+import { Link } from "react-router-dom";
+import "../styles/home.css";
 
 function Home() {
-    return (
-
-        <div className="bg-dark text-white" style={{ minHeight: "100vh" }}>
-            <div>
-                <Header />
-
-                <Servicos />
-            </div>
-        </div >
-    )
+    return <main className="public-home"><nav className="public-nav"><Link className="public-brand" to="/">💈 Barbearia</Link><div className="public-nav-actions"><Link className="public-link" to="/login">Já sou cliente</Link><Link className="public-link primary" to="/login">Agendar horário</Link></div></nav><section className="public-hero"><div><span className="public-eyebrow">Atendimento online</span><h1>Seu próximo corte começa aqui.</h1><p>Escolha o serviço, encontre um horário disponível e deixe sua próxima visita à barbearia marcada.</p><div className="public-hero-actions"><Link className="public-link primary" to="/login">Agendar horário →</Link><Link className="public-link" to="/login">Acessar meus horários</Link></div></div><div className="public-signal"><span className="public-eyebrow">Para sua próxima visita</span><h2>Escolha o horário que combina com você.</h2><p>Consulte seus agendamentos, acompanhe os detalhes do atendimento e avise a barbearia quando precisar.</p></div></section><section className="public-benefits"><article><strong>01 · Agende seu serviço</strong><span>Escolha o corte ou cuidado que você precisa e reserve um horário disponível.</span></article><article><strong>02 · Consulte seus horários</strong><span>Veja seus próximos atendimentos e os detalhes da sua visita em um só lugar.</span></article><article><strong>03 · Cuide do seu estilo</strong><span>Após o atendimento, avalie a experiência e encontre produtos para continuar o cuidado em casa.</span></article></section></main>;
 }
 
 export default Home;

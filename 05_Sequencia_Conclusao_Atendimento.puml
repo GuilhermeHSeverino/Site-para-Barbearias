@@ -1,0 +1,18 @@
+@startuml Seq_Conclusao_Atendimento
+actor Barbeiro
+participant "Frontend React" as Frontend
+participant "Schedule API" as API
+participant "ScheduleSerializer" as Serializer
+participant "Banco de dados" as DB
+participant "Finances" as Finance
+
+Barbeiro -> Frontend : seleciona atendimento e forma de pagamento
+Frontend -> API : PATCH /schedule/{id}/
+API -> Serializer : atualiza status para concluido
+Serializer -> DB : salva Schedule
+Serializer -> Finance : cria Finances
+Finance -> DB : calcula valor pelo serviço e salva entrada
+Serializer --> API : atendimento concluído
+API --> Frontend : confirmação
+Frontend --> Barbeiro : atualiza agenda e financeiro
+@enduml

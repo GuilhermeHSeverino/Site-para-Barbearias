@@ -1,0 +1,38 @@
+@startuml Seq_Agendamento_Cancelamento
+actor Cliente
+participant "Frontend React" as Frontend
+participant "Schedule API" as API
+participant "ScheduleAvailabilityView" as Availability
+participant "ScheduleSerializer" as Serializer
+participant "Banco de dados" as DB
+participant "Serviço de notificações" as Notifications
+
+== Consulta de disponibilidade ==
+Cliente -> Frontend : seleciona barbeiro, serviço e data
+Frontend -> Availability : GET /schedule/availability/
+Availability -> DB : consulta jornada, intervalo,\nagendamentos e férias
+DB --> Availability : dados da agenda
+Availability --> Frontend : lista de horários livres
+Frontend --> Cliente : exibe horários
+
+== Confirmação ==
+Cliente -> Frontend : confirma horário
+Frontend -> API : POST /schedule/
+API -> Serializer : valida data, duração e conflito
+Serializer -> DB : verifica agendamentos existentes
+DB --> Serializer : resultado da validação
+Serializer -> DB : cria Schedule
+Serializer --> API : agendamento criado
+API --> Frontend : confirmação
+Frontend --> Cliente : mostra atendimento agendado
+
+== Cancelamento e lista de espera ==
+Cliente -> Frontend : solicita cancelamento
+Frontend -> API : PATCH /schedule/{id}/cancel/
+API -> DB : altera status para cancelado
+API -> DB : busca WaitlistEntry pendentes
+API -> Notifications : cria notificações para interessados
+API -> DB : altera entradas para notified
+API --> Frontend : cancelamento confirmado
+Frontend --> Cliente : atualiza histórico
+@enduml

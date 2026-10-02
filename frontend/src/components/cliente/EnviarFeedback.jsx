@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
+import "./clienteFlow.css";
 
 function EnviarFeedback() {
   const [barbeiros, setBarbeiros] = useState([]);
@@ -41,60 +42,30 @@ function EnviarFeedback() {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center min-vh-100"
-      style={{ backgroundColor: "#121212" }}
-    >
-      <div
-        className="p-4 rounded shadow-lg text-white"
-        style={{ maxWidth: "600px", width: "90%", backgroundColor: "#222" }}
-      >
-        <h2 className="mb-4 text-center">Avaliar Corte</h2>
+    <div className="cliente-fluxo">
+      <div className="cliente-fluxo-card">
+        <div className="cliente-fluxo-cabecalho">
+          <div><h2>Avalie seu atendimento</h2><p>Sua opinião ajuda a barbearia a melhorar cada visita.</p></div>
+          <span className="cliente-nota">★ Obrigado</span>
+        </div>
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label>Barbeiro</label>
-            <select
-              className="form-control"
-              value={barbeiro}
-              onChange={(e) => setBarbeiro(e.target.value)}
-              required
-            >
+          <div className="cliente-form-grupo">
+            <label className="cliente-fluxo-label" htmlFor="feedback-barbeiro">Barbeiro</label>
+            <select id="feedback-barbeiro" className="cliente-fluxo-input" value={barbeiro} onChange={(e) => setBarbeiro(e.target.value)} required>
               <option value="">Selecione um barbeiro</option>
-              {barbeiros.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
+              {barbeiros.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
-
-          <div className="mb-3">
-            <label>Comentário (opcional)</label>
-            <textarea
-              className="form-control"
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              placeholder="Deixe seu comentário (máx 500 caracteres)"
-              maxLength={500}
-            />
+          <div className="cliente-form-grupo">
+            <label className="cliente-fluxo-label" htmlFor="feedback-nota">Nota de 1 a 10</label>
+            <div className="cliente-nota-valor"><span>★</span><input id="feedback-nota" type="range" min="1" max="10" value={nota} onChange={(e) => setNota(e.target.value)} style={{ flex: 1, accentColor: "#22c55e" }} /><strong>{nota}/10</strong></div>
           </div>
-
-          <div className="mb-3">
-            <label>Nota (1 a 10)</label>
-            <input
-              type="number"
-              className="form-control"
-              value={nota}
-              onChange={(e) => setNota(e.target.value)}
-              min={1}
-              max={10}
-              required
-            />
+          <div className="cliente-form-grupo">
+            <label className="cliente-fluxo-label" htmlFor="feedback-comentario">Comentário (opcional)</label>
+            <textarea id="feedback-comentario" className="cliente-fluxo-input cliente-textarea" value={comentario} onChange={(e) => setComentario(e.target.value)} placeholder="Conte como foi sua experiência..." maxLength={500} />
+            <small className="cliente-nota">{comentario.length}/500 caracteres</small>
           </div>
-
-          <button type="submit" className="btn btn-success w-100">
-            Enviar Feedback
-          </button>
+          <button type="submit" className="cliente-fluxo-botao principal" style={{ width: "100%" }}>Enviar avaliação</button>
         </form>
       </div>
     </div>

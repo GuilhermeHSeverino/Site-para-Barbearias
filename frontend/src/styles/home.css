@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+.public-home { min-height: 100vh; overflow: hidden; background: #0d0d0d; color: white; font-family: 'DM Sans', sans-serif; }
+.public-nav { width: min(1180px, 90%); margin: 0 auto; padding: 24px 0; display: flex; justify-content: space-between; align-items: center; }
+.public-brand { color: white; font-size: 18px; font-weight: 700; text-decoration: none; }
+.public-nav-actions { display: flex; gap: 10px; align-items: center; }
+.public-link { padding: 10px 14px; border: 1px solid #2a2a2a; border-radius: 8px; color: #d1d5db; font-size: 13px; text-decoration: none; }
+.public-link.primary { border-color: #22c55e; background: #22c55e; color: #07130b; font-weight: 700; }
+.public-hero { width: min(1180px, 90%); min-height: 620px; margin: 0 auto; display: grid; grid-template-columns: 1fr .8fr; align-items: center; gap: 60px; }
+.public-eyebrow { color: #4ade80; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.public-hero h1 { max-width: 680px; margin: 16px 0 20px; font-family: 'Playfair Display', serif; font-size: clamp(48px, 7vw, 88px); line-height: .98; }
+.public-hero p { max-width: 520px; color: #a7b0aa; font-size: 16px; line-height: 1.7; }
+.public-hero-actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+.public-signal { position: relative; min-height: 390px; padding: 30px; border: 1px solid #2a2a2a; border-radius: 22px; background: linear-gradient(145deg, #1b241f, #121212 70%); }
+.public-signal:before { content: '✂'; position: absolute; right: 35px; top: 28px; color: #4ade80; font-size: 30px; }
+.public-signal h2 { max-width: 290px; margin-top: 170px; font-size: 27px; }
+.public-signal p { color: #9ca3af; font-size: 14px; line-height: 1.5; }
+.public-benefits { width: min(1180px, 90%); margin: 0 auto; padding: 0 0 60px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.public-benefits article { padding: 20px; border-top: 1px solid #2a2a2a; }
+.public-benefits strong { display: block; margin-bottom: 8px; color: white; }
+.public-benefits span { color: #9ca3af; font-size: 13px; line-height: 1.5; }
+@media (max-width: 760px) { .public-hero { grid-template-columns: 1fr; min-height: auto; padding: 70px 0; gap: 42px; } .public-hero h1 { font-size: 53px; } .public-signal { min-height: 250px; } .public-signal h2 { margin-top: 80px; } .public-benefits { grid-template-columns: 1fr; } .public-nav-actions .public-link:first-child { display: none; } }

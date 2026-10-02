@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+.auth-page { min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr; background: #0d0d0d; color: white; font-family: 'DM Sans', sans-serif; }
+.auth-showcase { display: flex; flex-direction: column; justify-content: center; padding: 8vw; background: radial-gradient(circle at 20% 20%, #283e2e 0, #18231b 28%, #101311 70%); }
+.auth-showcase > span { color: #4ade80; font-size: 32px; margin-bottom: 28px; }
+.auth-showcase p, .auth-kicker { color: #4ade80; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.auth-showcase h1 { margin: 14px 0 20px; font-family: 'Playfair Display', serif; font-size: clamp(38px, 5vw, 72px); line-height: 1.02; }
+.auth-showcase small { max-width: 430px; color: #a7b0aa; font-size: 15px; line-height: 1.7; }
+.auth-panel { display: flex; align-items: center; justify-content: center; padding: 36px; background: #111214; }
+.auth-form-wrap { width: min(100%, 410px); }
+.auth-form-wrap h2 { margin: 12px 0 8px; font-size: 32px; }
+.auth-subtitle { margin: 0 0 28px; color: #9ca3af; font-size: 14px; line-height: 1.5; }
+.auth-form-wrap form { display: grid; gap: 16px; }
+.auth-form-wrap label { display: grid; gap: 7px; color: #c8ccc9; font-size: 13px; font-weight: 600; }
+.auth-form-wrap input { width: 100%; box-sizing: border-box; padding: 13px 14px; border: 1px solid #2a2a2a; border-radius: 9px; background: #171717; color: white; outline: none; font: inherit; }
+.auth-form-wrap input:focus { border-color: #22c55e; }
+.auth-submit { margin-top: 8px; padding: 14px; border: 0; border-radius: 9px; background: #22c55e; color: #07130b; font-weight: 700; cursor: pointer; }
+.auth-submit:disabled { opacity: .55; cursor: not-allowed; }
+.auth-switch { margin: 22px 0 0; color: #9ca3af; font-size: 13px; text-align: center; }
+.auth-switch a { color: #4ade80; font-weight: 700; text-decoration: none; }
+.auth-error { margin-bottom: 16px; padding: 11px 13px; border: 1px solid #7f1d1d; border-radius: 8px; background: #2a1414; color: #fca5a5; font-size: 13px; }
+@media (max-width: 760px) { .auth-page { grid-template-columns: 1fr; } .auth-showcase { min-height: 270px; padding: 48px 9%; } .auth-showcase h1 { font-size: 40px; } .auth-panel { padding: 38px 9%; } }

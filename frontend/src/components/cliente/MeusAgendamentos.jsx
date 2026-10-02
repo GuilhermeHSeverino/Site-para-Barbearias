@@ -1,48 +1,51 @@
 import { useEffect, useState } from "react";
-import api from "../../api";
-import { jwtDecode } from "jwt-decode";
 import { ACCESS_TOKEN } from "../../constants";
 import { useNavigate } from "react-router-dom";
+import api from "../../api";
+import "./clienteFlow.css";
 
 function MeusAgendamentos() {
   const [agendamentos, setAgendamentos] = useState([]);
   const [barbeiros, setBarbeiros] = useState([]);
   const [servicos, setServicos] = useState([]);
+  const [cancelando, setCancelando] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) return;
 
-    let decoded;
-    try {
-      decoded = jwtDecode(token);
-    } catch {
-      console.error("Token inválido");
-      return;
-    }
-    const clientId = decoded.user_id || decoded.id;
-
-    // Buscar agendamentos
-    api.get(`/api/v1/schedule/?client_name=${clientId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => setAgendamentos(res.data))
+    api
+      .get("/api/v1/schedule/")
+      .then((res) => {
+        console.log("AGENDAMENTOS:", res.data);
+        setAgendamentos(res.data);
+      })
       .catch((err) => console.error(err));
 
     // Buscar barbeiros
-    api.get("/api/v1/barber/", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    api
+      .get("/api/v1/barber/")
       .then((res) => setBarbeiros(res.data))
       .catch((err) => console.error(err));
 
     // Buscar serviços
-    api.get("/api/v1/services/", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    api
+      .get("/api/v1/services/")
       .then((res) => setServicos(res.data))
       .catch((err) => console.error(err));
+
+  }, []);
+
+  useEffect(() => {
+    const atualizarAoVoltar = () => {
+      api.get("/api/v1/schedule/")
+        .then((res) => setAgendamentos(res.data))
+        .catch((err) => console.error(err));
+    };
+
+    window.addEventListener("focus", atualizarAoVoltar);
+    return () => window.removeEventListener("focus", atualizarAoVoltar);
   }, []);
 
   const getBarbeiroNome = (barberId) => {
@@ -59,56 +62,56 @@ function MeusAgendamentos() {
     navigate(`/cliente/feedback?barber=${barberId}`);
   };
 
+  const cancelarAgendamento = async (id) => {
+    if (!window.confirm("Deseja cancelar este corte?")) return;
+    setCancelando(id);
+    try {
+      await api.patch(`/api/v1/schedule/${id}/cancel/`);
+      setAgendamentos((atuais) => atuais.map((item) => item.id === id ? { ...item, status: "cancelado" } : item));
+    } catch (error) {
+      window.alert(error.response?.data?.detail || "Não foi possível cancelar o corte.");
+    } finally {
+      setCancelando(null);
+    }
+  };
+
   return (
-    <div
-      className="d-flex justify-content-center align-items-start min-vh-100 py-5"
-      style={{ backgroundColor: "#121212" }}
-    >
-      <div
-        className="p-5 rounded-4 shadow-lg text-white"
-        style={{ maxWidth: "640px", width: "100%", backgroundColor: "#1E1E2F" }}
-      >
-        <h2 className="mb-5 text-center" style={{ fontWeight: "700", letterSpacing: "1.5px" }}>
-          Meus Agendamentos
-        </h2>
+    <div className="cliente-fluxo">
+      <div className="cliente-fluxo-card">
+        <div className="cliente-fluxo-cabecalho">
+          <div><h2>Meus agendamentos</h2><p>Acompanhe seus horários e avalie os atendimentos concluídos.</p></div>
+          <button className="cliente-fluxo-botao principal" onClick={() => navigate("/cliente/agendar")}>＋ Agendar</button>
+        </div>
 
         {agendamentos.length === 0 ? (
-          <p className="text-center fs-5" style={{ color: "#bbb" }}>
-            Você ainda não realizou nenhum corte.
-          </p>
+          <div className="cliente-fluxo-vazio">Você ainda não realizou nenhum agendamento.</div>
         ) : (
-          agendamentos.map((agendamento) => (
-            <div
-              key={agendamento.id}
-              className="mb-4 p-4"
-              style={{
-                backgroundColor: "#2A2A3D",
-                borderRadius: "12px",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
-              }}
-            >
-              <p style={{ marginBottom: "0.25rem" }}>
-                <strong>Barbeiro:</strong> {getBarbeiroNome(agendamento.barber)}
-              </p>
-              <p style={{ marginBottom: "0.25rem" }}>
-                <strong>Serviço:</strong> {getServicoNome(agendamento.service)}
-              </p>
-              <p style={{ marginBottom: "0.25rem" }}>
-                <strong>Data:</strong> {new Date(agendamento.date).toLocaleDateString("pt-BR")}
-              </p>
-              <p style={{ marginBottom: "1rem" }}>
-                <strong>Início:</strong> {agendamento.start_time}
-              </p>
-
-              <button
-                className="btn btn-warning fw-semibold"
-                style={{ width: "100%", padding: "0.6rem", fontSize: "1rem" }}
-                onClick={() => handleAvaliar(agendamento.barber)}
-              >
-                Avaliar
-              </button>
-            </div>
-          ))
+          <div className="cliente-agendamento-lista">
+            {agendamentos.map((agendamento) => {
+              const status = agendamento.status?.toLowerCase() || "agendado";
+              const statusLabel = {
+                agendado: "Agendado",
+                confirmado: "Confirmado",
+                concluido: "Concluído",
+                cancelado: "Cancelado",
+              }[status] || status;
+              return (
+                <div key={agendamento.id} className="cliente-agendamento-item">
+                  <div className="cliente-agendamento-topo">
+                    <div>
+                      <h3>{getServicoNome(agendamento.service)}</h3>
+                      <p>Com {getBarbeiroNome(agendamento.barber)}</p>
+                    </div>
+                    <span className={`cliente-status ${status}`}>{statusLabel}</span>
+                  </div>
+                  <p>📅 {agendamento.date.split("-").reverse().join("/")} às {agendamento.start_time}</p>
+                  {status === "agendado" || status === "confirmado" ? <button className="cliente-avaliar cliente-cancelar" onClick={() => cancelarAgendamento(agendamento.id)} disabled={cancelando === agendamento.id}>{cancelando === agendamento.id ? "Cancelando..." : "Cancelar corte"}</button> : null}
+                  {status === "agendado" || status === "confirmado" ? <button className="cliente-avaliar" onClick={() => navigate(`/cliente/agendar?reagendar=${agendamento.id}&barber=${agendamento.barber}&service=${agendamento.service}`)}>Reagendar corte →</button> : null}
+                  {status === "concluido" && <button className="cliente-avaliar" onClick={() => handleAvaliar(agendamento.barber)}>Avaliar atendimento →</button>}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

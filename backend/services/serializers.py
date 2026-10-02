@@ -7,6 +7,7 @@ class ServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Services
         fields = "__all__"
+        read_only_fields = ['barber']
 
     def validate_duration(self, value):
         # Verifica se o valor é uma string no formato "HH:MM:SS"

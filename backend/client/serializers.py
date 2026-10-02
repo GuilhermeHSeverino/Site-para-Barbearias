@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client
+from .models import Client, BarberClientNote
 from django.contrib.auth.models import User
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class ClientSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=password
         )
-        
+
         # Criar o Client e associá-lo ao User
         client = Client.objects.create(
             user=user,
@@ -30,5 +30,11 @@ class ClientSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             phone=validated_data['phone']
         )
-        
+
         return client
+
+class BarberClientNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarberClientNote
+        fields = ['id', 'barber', 'client', 'note', 'created_at', 'updated_at']
+        read_only_fields = ['barber', 'created_at', 'updated_at']

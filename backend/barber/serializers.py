@@ -1,35 +1,45 @@
+# serializers.py
 from rest_framework import serializers
 from .models import Barber
 from django.contrib.auth.models import User
 
 class BarberSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)  # Campo de senha
+    password = serializers.CharField(write_only=True)
     is_superuser = serializers.SerializerMethodField()
-    
+    barber_id = serializers.SerializerMethodField()  # Retorna ID do barber
+
     class Meta:
         model = Barber
-        fields = ['id', 'name', 'email', 'phone', 'password','is_superuser','created_at', 'updated_at']
-        read_only_fields = ['created_at', 'updated_at'] 
-
+        fields = [
+            'barber_id', 'id', 'name', 'email', 'phone', 'password',
+            'is_superuser', 'created_at', 'updated_at',
+            'photo', 'bio', 'specialties', 'work_start', 'work_end', 'break_start', 'break_end'
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'barber_id']
 
     def get_is_superuser(self, obj):
         return obj.user.is_superuser
-    
+
+    def get_barber_id(self, obj):
+        return obj.id
+
     def create(self, validated_data):
-        # Criação do User com a senha fornecida
-        password = validated_data.pop('password')  # Remover a senha dos dados validados
+        password = validated_data.pop('password')
+        email = validated_data['email']
+
+        # Criar usuário como superuser
         user = User.objects.create_superuser(
-            username=validated_data['email'],  # Usar o email como username
-            email=validated_data['email'],
+            username=email,
+            email=email,
             password=password
         )
-        
-        # Criar o Barber e associá-lo ao User
+
+        # Criar o barber associado
         barber = Barber.objects.create(
             user=user,
             name=validated_data['name'],
-            email=validated_data['email'],
+            email=email,
             phone=validated_data['phone']
         )
-        
+
         return barber

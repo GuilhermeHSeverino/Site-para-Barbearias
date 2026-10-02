@@ -1,0 +1,85 @@
+.cliente-fluxo {
+    width: 92%;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 32px 0 48px;
+    color: white;
+}
+
+.cliente-fluxo-card {
+    padding: 28px;
+    border: 1px solid #2a2a2a;
+    border-radius: 18px;
+    background: #171717;
+}
+
+.cliente-fluxo-cabecalho { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 24px; }
+.cliente-fluxo-cabecalho h2 { margin: 0; color: white; font-size: 24px; }
+.cliente-fluxo-cabecalho p { margin: 7px 0 0; color: #9ca3af; font-size: 14px; }
+.cliente-fluxo-etapas { display: flex; gap: 8px; margin-bottom: 28px; }
+.cliente-fluxo-etapa { flex: 1; height: 4px; border-radius: 8px; background: #2a2a2a; }
+.cliente-fluxo-etapa.ativa { background: #22c55e; }
+.cliente-fluxo-label { display: block; margin-bottom: 9px; color: #c8ccc9; font-size: 13px; font-weight: 600; }
+.cliente-fluxo-opcoes { display: grid; gap: 10px; }
+.cliente-fluxo-opcao { width: 100%; padding: 15px 16px; border: 1px solid #2a2a2a; border-radius: 11px; background: #121212; color: white; text-align: left; cursor: pointer; transition: .15s; }
+.cliente-fluxo-opcao:hover, .cliente-fluxo-opcao.ativa { border-color: #22c55e; background: #1b2a20; }
+.cliente-fluxo-opcao strong { display: block; font-size: 15px; }
+.cliente-fluxo-opcao small { display: block; margin-top: 4px; color: #9ca3af; }
+.cliente-fluxo-input { width: 100%; padding: 13px 14px; border: 1px solid #2a2a2a; border-radius: 10px; background: #121212; color: white; outline: none; }
+.cliente-fluxo-input:focus { border-color: #22c55e; }
+.cliente-horarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 10px; }
+.cliente-horario { min-height: 52px; border: 1px solid #2a2a2a; border-radius: 10px; background: #121212; color: #d1d5db; font-size: 15px; font-weight: 700; cursor: pointer; transition: .15s; }
+.cliente-horario:hover, .cliente-horario.ativo { border-color: #22c55e; background: #1b2a20; color: #4ade80; }
+.cliente-datas-navegacao { display: flex; align-items: stretch; gap: 8px; }
+.cliente-datas { min-width: 0; flex: 1; display: flex; gap: 9px; overflow: hidden; }
+.cliente-data-seta { width: 36px; flex: 0 0 36px; border: 1px solid #2a2a2a; border-radius: 10px; background: #121212; color: #4ade80; font-size: 25px; cursor: pointer; }
+.cliente-data-seta:hover:not(:disabled) { border-color: #22c55e; background: #1b2a20; }
+.cliente-data-seta:disabled { opacity: .35; cursor: not-allowed; }
+.cliente-data { min-height: 82px; padding: 10px 6px; border: 1px solid #2a2a2a; border-radius: 11px; background: #121212; color: #9ca3af; cursor: pointer; transition: .15s; }
+.cliente-data { flex: 0 0 76px; }
+.cliente-data strong, .cliente-data span, .cliente-data small { display: block; }
+.cliente-data strong { color: white; font-size: 21px; }
+.cliente-data span { margin-top: 2px; color: #4ade80; font-size: 12px; text-transform: uppercase; }
+.cliente-data small { margin-top: 5px; font-size: 11px; }
+.cliente-data:hover, .cliente-data.ativa { border-color: #22c55e; background: #1b2a20; color: white; }
+.cliente-horarios-bloco { margin-top: 24px; padding-top: 20px; border-top: 1px solid #2a2a2a; }
+.cliente-fluxo-acoes { display: flex; justify-content: space-between; gap: 12px; margin-top: 26px; }
+.cliente-fluxo-botao { padding: 12px 18px; border: 1px solid #2a2a2a; border-radius: 10px; background: #252525; color: white; font-weight: 700; cursor: pointer; }
+.cliente-fluxo-botao.principal { border-color: #22c55e; background: #22c55e; color: #07130b; }
+.cliente-fluxo-botao:disabled { opacity: .45; cursor: not-allowed; }
+.cliente-fluxo-vazio { padding: 36px 20px; border: 1px dashed #3a3a3a; border-radius: 12px; color: #9ca3af; text-align: center; }
+.cliente-agendamento-lista { display: grid; gap: 12px; }
+.cliente-agendamento-item { padding: 18px; border: 1px solid #2a2a2a; border-radius: 14px; background: #121212; }
+.cliente-agendamento-topo { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.cliente-agendamento-item h3 { margin: 0 0 5px; color: white; font-size: 17px; }
+.cliente-agendamento-item p { margin: 4px 0; color: #9ca3af; font-size: 13px; }
+.cliente-status { padding: 5px 10px; border-radius: 20px; color: #facc15; background: rgba(250, 204, 21, .12); font-size: 11px; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+.cliente-status.concluido { color: #4ade80; background: rgba(34, 197, 94, .12); }
+.cliente-status.cancelado { color: #f87171; background: rgba(239, 68, 68, .12); }
+.cliente-avaliar { margin-top: 14px; padding: 9px 13px; border: 1px solid #3b453f; border-radius: 8px; background: transparent; color: #4ade80; font-size: 13px; font-weight: 700; cursor: pointer; }
+.cliente-cancelar { border-color: rgba(239, 68, 68, .4); color: #f87171; }
+.cliente-nota { color: #9ca3af; font-size: 13px; }
+.cliente-nota-valor { display: flex; gap: 8px; align-items: center; margin-top: 8px; color: #facc15; font-size: 28px; }
+.cliente-loja-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.cliente-loja-card { padding: 18px; border: 1px solid #2a2a2a; border-radius: 14px; background: #171717; }
+.cliente-loja-imagem { height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; border-radius: 10px; background: linear-gradient(135deg, #1d2a21, #121212); color: #4ade80; font-size: 34px; }
+.cliente-loja-card h3 { margin: 8px 0; color: white; font-size: 16px; }
+.cliente-loja-card > strong { display: block; color: #4ade80; font-size: 19px; }
+.cliente-loja-compra { display: flex; gap: 8px; margin-top: 16px; }
+.cliente-loja-compra input { width: 58px; border: 1px solid #2a2a2a; border-radius: 8px; background: #121212; color: white; text-align: center; }
+.cliente-loja-compra .cliente-fluxo-botao { flex: 1; padding: 9px 10px; }
+.cliente-loja-retirada { margin-bottom: 22px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #121212; }
+.cliente-loja-retirada .cliente-nota { display: block; margin-top: 8px; }
+.cliente-form-grupo { margin-bottom: 18px; }
+.cliente-textarea { min-height: 130px; resize: vertical; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+@media (max-width: 600px) {
+    .cliente-fluxo { width: 92%; padding: 24px 0 36px; }
+    .cliente-fluxo-card { padding: 20px; }
+    .cliente-fluxo-cabecalho { flex-direction: column; }
+    .cliente-fluxo-cabecalho h2 { font-size: 21px; }
+    .cliente-fluxo-acoes { flex-direction: column-reverse; }
+    .cliente-fluxo-botao { width: 100%; }
+    .cliente-agendamento-topo { flex-direction: column; }
+}

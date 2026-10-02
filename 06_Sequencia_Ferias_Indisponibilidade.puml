@@ -1,0 +1,29 @@
+@startuml Seq_Ferias_Indisponibilidade
+actor Barbeiro
+actor Cliente
+participant "Frontend React" as Frontend
+participant "Vacation API" as VacationAPI
+participant "Schedule API" as ScheduleAPI
+participant "Banco de dados" as DB
+
+== Bloqueio de férias ==
+Barbeiro -> Frontend : informa mês de férias
+Frontend -> VacationAPI : POST /schedule/vacations/
+VacationAPI -> DB : cria Vacation com início e fim do mês
+VacationAPI --> Frontend : férias cadastradas
+Frontend --> Barbeiro : confirma bloqueio
+
+== Consulta de disponibilidade durante férias ==
+Cliente -> Frontend : consulta data e serviço
+Frontend -> ScheduleAPI : GET /schedule/availability/
+ScheduleAPI -> DB : verifica Vacation
+DB --> ScheduleAPI : data bloqueada
+ScheduleAPI --> Frontend : slots vazios e vacation=true
+Frontend --> Cliente : informa indisponibilidade
+
+== Bloqueio de horário específico ==
+Barbeiro -> Frontend : seleciona cliente opcional e intervalo
+Frontend -> ScheduleAPI : POST /schedule/ com status=bloqueado
+ScheduleAPI -> DB : cria Schedule sem cliente/serviço
+ScheduleAPI --> Frontend : bloqueio registrado
+@enduml

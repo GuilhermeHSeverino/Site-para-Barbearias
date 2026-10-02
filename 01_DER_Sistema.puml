@@ -1,0 +1,125 @@
+@startuml DER_Sistema
+hide methods
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+class User <<Django Auth>>
+class Barber {
+  id
+  name
+  email
+  phone
+  work_start
+  work_end
+  break_start
+  break_end
+}
+class Client {
+  id
+  name
+  email
+  phone
+}
+class BarberClientNote {
+  id
+  note
+}
+class Services {
+  id
+  name
+  price
+  duration
+}
+class Schedule {
+  id
+  date
+  start_time
+  end_time
+  status
+}
+class Vacation {
+  id
+  start_date
+  end_date
+}
+class WaitlistEntry {
+  id
+  date
+  status
+  created_at
+}
+class Product {
+  id
+  name
+  price
+  estoque_minimo
+  disponivel_na_loja
+}
+class Stock {
+  id
+  quantity
+}
+class StockMovement {
+  id
+  type
+  quantity
+  created_at
+}
+class Store {
+  id
+  quantity_sold
+  date_of_sale
+  status
+  payment_method
+}
+class Finances {
+  id
+  tipo
+  valor
+  date
+  payment_method
+  categoria
+}
+class Review {
+  id
+  rating
+  comment
+}
+class Notification {
+  id
+  message
+  type
+  is_read
+  created_at
+}
+class ClientNotification {
+  id
+  message
+  is_read
+  created_at
+}
+
+User "1" -- "0..1" Barber : user
+User "1" -- "0..1" Client : user
+Barber "1" -- "0..*" Services : oferece
+Barber "1" -- "0..*" Schedule : possui
+Client "0..1" -- "0..*" Schedule : realiza
+Services "0..1" -- "0..*" Schedule : utiliza
+Barber "1" -- "0..*" Vacation : bloqueia
+Client "1" -- "0..*" WaitlistEntry : solicita
+Barber "1" -- "0..*" WaitlistEntry : recebe
+Services "1" -- "0..*" WaitlistEntry : referente
+Barber "1" -- "0..*" BarberClientNote : escreve
+Client "1" -- "0..*" BarberClientNote : recebe
+Product "1" -- "1" Stock : possui
+Product "1" -- "0..*" StockMovement : movimenta
+Stock "1" -- "0..*" Store : origina
+Client "1" -- "0..*" Store : solicita
+Barber "0..1" -- "0..*" Store : entrega
+Barber "0..1" -- "0..*" Finances : registra
+Schedule "0..1" -- "0..*" Finances : gera
+Store "0..1" -- "0..*" Finances : gera
+Barber "1" -- "0..*" Review : recebe
+Barber "1" -- "0..*" Notification : recebe
+Client "1" -- "0..*" ClientNotification : recebe
+@enduml
