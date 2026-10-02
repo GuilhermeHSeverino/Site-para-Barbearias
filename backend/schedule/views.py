@@ -96,7 +96,11 @@ class ScheduleAvailabilityView(APIView):
         except ValueError:
             return Response({"detail": "Data inválida."}, status=400)
 
-        if selected_date < timezone.now().date():
+        agora = timezone.localtime()
+        hoje = agora.date()
+        minutos_agora = agora.hour * 60 + agora.minute
+
+        if selected_date < hoje:
             return Response({"detail": "Não é possível consultar uma data passada."}, status=400)
 
         if Vacation.objects.filter(barber=barber, start_date__lte=selected_date, end_date__gte=selected_date).exists():
@@ -118,6 +122,9 @@ class ScheduleAvailabilityView(APIView):
 
         slots = []
         for inicio in range(inicio_jornada, fim_jornada, 30):
+            if selected_date == hoje and inicio <= minutos_agora:
+                continue
+
             fim = inicio + duracao
             dentro_do_intervalo = (
                 inicio_intervalo is not None and fim_intervalo is not None and
