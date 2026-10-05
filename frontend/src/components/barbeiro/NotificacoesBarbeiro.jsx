@@ -8,10 +8,6 @@ export default function NotificacoesBarbeiro() {
     const [erro, setErro] = useState("");
     const navigate = useNavigate();
 
-    useEffect(() => {
-        carregarNotificacoes();
-    }, []);
-
     const carregarNotificacoes = async () => {
         try {
             const res = await api.get("/api/v1/notifications/");
@@ -23,6 +19,17 @@ export default function NotificacoesBarbeiro() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        carregarNotificacoes();
+        const intervalo = window.setInterval(carregarNotificacoes, 10000);
+        window.addEventListener("focus", carregarNotificacoes);
+
+        return () => {
+            window.clearInterval(intervalo);
+            window.removeEventListener("focus", carregarNotificacoes);
+        };
+    }, []);
 
     const marcarComoLida = async (id) => {
         try {
