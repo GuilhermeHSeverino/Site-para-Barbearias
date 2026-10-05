@@ -45,6 +45,14 @@ class ScheduleSerializer(serializers.ModelSerializer):
         if not instance and date < timezone.now().date():
             raise serializers.ValidationError({"date": "Não é possível agendar para uma data passada."})
 
+        if not instance:
+            agora = timezone.localtime()
+            if date == agora.date() and start_time <= agora.time():
+                raise serializers.ValidationError({"start_time": "Não é possível adicionar um horário que já passou."})
+
+        if service and service.barber_id != barber.id:
+            raise serializers.ValidationError({"service": "Este serviço não pertence ao barbeiro selecionado."})
+
         if Vacation.objects.filter(barber=barber, start_date__lte=date, end_date__gte=date).exists():
             raise serializers.ValidationError({"date": "O barbeiro está de férias nesta data."})
 
@@ -56,6 +64,17 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
         start_time_obj = timedelta(hours=start_time.hour, minutes=start_time.minute)
         end_time_obj = start_time_obj + timedelta(minutes=duration)
+
+        work_start = timedelta(hours=barber.work_start.hour, minutes=barber.work_start.minute)
+        work_end = timedelta(hours=barber.work_end.hour, minutes=barber.work_end.minute)
+        if start_time_obj < work_start or end_time_obj > work_end:
+            raise serializers.ValidationError({"start_time": "O horário está fora do expediente do barbeiro."})
+
+        if barber.break_start and barber.break_end:
+            break_start = timedelta(hours=barber.break_start.hour, minutes=barber.break_start.minute)
+            break_end = timedelta(hours=barber.break_end.hour, minutes=barber.break_end.minute)
+            if start_time_obj < break_end and end_time_obj > break_start:
+                raise serializers.ValidationError({"start_time": "O horário coincide com o intervalo do barbeiro."})
 
         min_interval = timedelta(minutes=8)
 
@@ -98,6 +117,21 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
         schedule = super().create(validated_data)
 
+        from notifications.services import notify_barber, notify_client
+        data_agendamento = schedule.date.strftime('%d/%m/%Y')
+        horario_agendamento = schedule.start_time.strftime('%H:%M')
+        servico_nome = schedule.service.name if schedule.service else 'bloqueio de agenda'
+        if schedule.client_name:
+            notify_client(
+                schedule.client_name,
+                f"Agendamento confirmado com {schedule.barber.name} em {data_agendamento} às {horario_agendamento}.",
+            )
+            if not is_barber:
+                notify_barber(
+                    schedule.barber,
+                    f"Novo agendamento: {schedule.client_name.name} marcou {servico_nome} em {data_agendamento} às {horario_agendamento}.",
+                )
+
         # Only send email if there is a client
         if schedule.client_name:
             send_mail(
@@ -132,6 +166,20 @@ class ScheduleSerializer(serializers.ModelSerializer):
                 date=instance.date,
                 tipo="entrada",
                 payment_method=payment_method,
+            )
+
+            if instance.client_name:
+                from notifications.services import notify_client
+                notify_client(
+                    instance.client_name,
+                    f"Seu atendimento com {instance.barber.name} foi concluído. Avalie sua experiência.",
+                )
+
+        if instance.status == "cancelado" and old_status != "cancelado" and instance.client_name:
+            from notifications.services import notify_client
+            notify_client(
+                instance.client_name,
+                f"Seu agendamento com {instance.barber.name} em {instance.date.strftime('%d/%m/%Y')} foi cancelado pelo barbeiro.",
             )
 
         return instance

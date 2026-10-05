@@ -22,3 +22,10 @@ class StockMovementSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("Quantidade deve ser maior que zero.")
         return value
+
+    def validate(self, data):
+        if data.get("type") == "saida":
+            stock = Stock.objects.filter(product=data["product"]).first()
+            if not stock or stock.quantity < data["quantity"]:
+                raise serializers.ValidationError({"quantity": "Estoque insuficiente para esta saída."})
+        return data

@@ -66,11 +66,15 @@ class ScheduleClientCancelView(APIView):
             return Response({"detail": "Este agendamento não pode mais ser cancelado."}, status=400)
         schedule.status = "cancelado"
         schedule.save(update_fields=["status"])
-        from notifications.models import ClientNotification, Notification
+        from notifications.services import notify_barber, notify_client
+        notify_barber(
+            schedule.barber,
+            f"Agendamento cancelado pelo cliente {client.name}: {schedule.date.strftime('%d/%m/%Y')} às {schedule.start_time.strftime('%H:%M')}.",
+        )
         entries = WaitlistEntry.objects.filter(barber=schedule.barber, service=schedule.service, date=schedule.date, status="pending").select_related("client")
         for entry in entries:
-            ClientNotification.objects.create(client=entry.client, message=f"Surgiu uma possibilidade de horário com {schedule.barber.name} em {schedule.date.strftime('%d/%m/%Y')}. Confira a agenda.")
-            Notification.objects.create(barber=schedule.barber, message=f"A lista de espera tem um cliente interessado em {schedule.date.strftime('%d/%m/%Y')}.", type="SYSTEM")
+            notify_client(entry.client, f"Surgiu uma possibilidade de horário com {schedule.barber.name} em {schedule.date.strftime('%d/%m/%Y')}. Confira a agenda.")
+            notify_barber(schedule.barber, f"A lista de espera tem um cliente interessado em {schedule.date.strftime('%d/%m/%Y')}.")
             entry.status = "notified"
             entry.save(update_fields=["status"])
         return Response({"id": schedule.id, "status": schedule.status})
@@ -194,6 +198,10 @@ class WaitlistCreateView(APIView):
             return Response({"detail": "Barbeiro ou serviço não encontrado."}, status=404)
         except (TypeError, ValueError):
             return Response({"detail": "Data inválida."}, status=400)
+
+        if date_value < timezone.now().date():
+            return Response({"detail": "Não é possível entrar na lista de espera para uma data passada."}, status=400)
+
         entry, created = WaitlistEntry.objects.get_or_create(client=client, barber=barber, service=service, date=date_value)
         return Response({"id": entry.id, "status": entry.status}, status=201 if created else 200)
 

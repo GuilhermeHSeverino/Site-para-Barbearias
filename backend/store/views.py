@@ -10,6 +10,7 @@ from client.models import Client
 from stock.models import Stock, StockMovement
 from finance.models import Finances
 from barber.models import Barber
+from notifications.models import Notification
 
 class StoreListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdminUser]
@@ -58,6 +59,16 @@ class StoreSaleView(APIView):
             if stock.quantity < quantity:
                 return Response({"detail": "Estoque insuficiente para reservar este pedido."}, status=400)
             store_sale = Store.objects.create(stock=stock, client=client, barber=barber, quantity_sold=quantity, status="pendente", payment_method=payment_method)
+
+        from notifications.services import notify_barber, notify_client
+        notify_barber(
+            barber,
+            f"Novo pedido: {client.name} reservou {quantity} unidade(s) de {stock.product.name} para retirada.",
+        )
+        notify_client(
+            client,
+            f"Pedido de {quantity} unidade(s) de {stock.product.name} recebido. Aguarde a confirmação da entrega.",
+        )
 
         return Response({"id": store_sale.id, "status": store_sale.status}, status=201)
 
@@ -116,6 +127,12 @@ class StoreCancelView(APIView):
             return Response({"detail": "Somente pedidos pendentes podem ser cancelados."}, status=400)
         pedido.status = "cancelado"
         pedido.save(update_fields=["status"])
+        from notifications.services import notify_barber
+        if pedido.barber:
+            notify_barber(
+                pedido.barber,
+                f"Pedido cancelado pelo cliente {client.name}: {pedido.quantity_sold} unidade(s) de {pedido.stock.product.name}.",
+            )
         return Response({"id": pedido.id, "status": pedido.status})
 
 
@@ -138,8 +155,19 @@ class StoreConfirmView(APIView):
                 return Response({"detail": "Estoque insuficiente para confirmar a entrega."}, status=400)
 
             StockMovement.objects.create(product=pedido.stock.product, type="saida", quantity=pedido.quantity_sold, description="Entrega de pedido da loja")
+            pedido.stock.refresh_from_db()
             Finances.objects.create(store=pedido, barber=barber, tipo="entrada", valor=pedido.stock.product.price * pedido.quantity_sold, date=now().date(), payment_method="dinheiro", categoria="outros")
             pedido.status = "entregue"
             pedido.save(update_fields=["status"])
+
+            from notifications.services import notify_barber, notify_client
+            notify_client(
+                pedido.client,
+                f"Pedido de {pedido.stock.product.name} confirmado para retirada. Pagamento registrado na entrega.",
+            )
+            if pedido.stock.quantity <= pedido.stock.product.estoque_minimo:
+                mensagem_estoque = f"Estoque baixo: {pedido.stock.product.name} está com {pedido.stock.quantity} unidade(s)."
+                if not Notification.objects.filter(barber=barber, message=mensagem_estoque, is_read=False).exists():
+                    notify_barber(barber, mensagem_estoque, "STOCK_LOW")
 
         return Response({"id": pedido.id, "status": pedido.status})

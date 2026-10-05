@@ -1,4 +1,4 @@
-import { formatarMoeda, obterInicial } from "../../utils/formatters";
+import { formatarMoeda } from "../../utils/formatters";
 
 export default function ProdutoLojaCard({
     produto,
@@ -12,9 +12,6 @@ export default function ProdutoLojaCard({
 
     return (
         <article className="cliente-loja-card">
-            <div className="cliente-loja-imagem" aria-hidden="true">
-                {obterInicial(produto.product_name)}
-            </div>
             <span className="cliente-nota">Disponível: {produto.quantity}</span>
             <h3>{produto.product_name}</h3>
             <strong>{formatarMoeda(produto.product_price)}</strong>
