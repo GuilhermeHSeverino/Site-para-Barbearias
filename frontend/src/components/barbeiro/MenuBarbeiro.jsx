@@ -15,11 +15,13 @@ function MenuBarbeiro() {
     }, []);
 
     const carregarResumo = async () => {
-        const hoje = new Date().toISOString().split("T")[0];
+        // data no fuso local (toISOString usaria UTC e trocaria o dia à noite)
+        const agora = new Date();
+        const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
 
         const [schedRes, financeMesRes, financeDiaRes, stockAlertsRes] =
             await Promise.allSettled([
-                api.get("/api/v1/schedule/"),
+                api.get("/api/v1/schedule/", { params: { data_inicio: hoje, data_fim: hoje } }),
                 api.get("/api/v1/finance-summary/?periodo=mensal"),
                 api.get("/api/v1/finance-summary/?periodo=diario"),
                 api.get("/api/v1/stock-alerts/"),

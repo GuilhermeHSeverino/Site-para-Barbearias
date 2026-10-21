@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 
-from .models import Schedule, Vacation
+from .models import Schedule, Vacation, INTERVALO_ENTRE_ATENDIMENTOS_MIN
 from client.models import Client
 from barber.models import Barber
 from finance.models import Finances
@@ -76,7 +76,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
             if start_time_obj < break_end and end_time_obj > break_start:
                 raise serializers.ValidationError({"start_time": "O horário coincide com o intervalo do barbeiro."})
 
-        min_interval = timedelta(minutes=8)
+        min_interval = timedelta(minutes=INTERVALO_ENTRE_ATENDIMENTOS_MIN)
 
         conflicting = Schedule.objects.filter(
              barber=barber,

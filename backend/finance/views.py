@@ -34,7 +34,8 @@ class FinancesListCreateView(generics.ListCreateAPIView):
     serializer_class = FinancesSerializer
 
     def get_queryset(self):
-        queryset = Finances.objects.all().order_by('date')
+        # select_related evita uma consulta extra por lançamento (barbeiro e serviço)
+        queryset = Finances.objects.select_related('barber', 'schedule__service').order_by('date')
         periodo = self.request.query_params.get('periodo', 'mensal')
         return filtrar_periodo(queryset, periodo)
 
@@ -97,7 +98,7 @@ class FinanceSaldoAPIView(generics.GenericAPIView):
         periodo = request.query_params.get('periodo', 'mensal')
 
         queryset = filtrar_periodo(
-            Finances.objects.all().order_by('date'),
+            Finances.objects.select_related('schedule__service', 'store').order_by('date'),
             periodo
         )
 

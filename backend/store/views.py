@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db import transaction
+from django.db.models import Sum
 from django.utils.timezone import now
 from .models import Store
 from .serializers import StoreSerializer
@@ -56,7 +57,9 @@ class StoreSaleView(APIView):
 
             if not stock.product.disponivel_na_loja:
                 return Response({"detail": "Este produto não está disponível na loja."}, status=400)
-            if stock.quantity < quantity:
+            # unidades já reservadas por pedidos pendentes não estão mais disponíveis
+            reservado = Store.objects.filter(stock=stock, status="pendente").aggregate(total=Sum("quantity_sold"))["total"] or 0
+            if stock.quantity - reservado < quantity:
                 return Response({"detail": "Estoque insuficiente para reservar este pedido."}, status=400)
             store_sale = Store.objects.create(stock=stock, client=client, barber=barber, quantity_sold=quantity, status="pendente", payment_method=payment_method)
 
@@ -144,6 +147,10 @@ class StoreConfirmView(APIView):
         if not barber:
             return Response({"detail": "Apenas barbeiros podem confirmar entregas."}, status=403)
 
+        payment_method = request.data.get("payment_method", "dinheiro")
+        if payment_method not in dict(Finances.PAYMENT_CHOICES):
+            return Response({"detail": "Forma de pagamento inválida."}, status=400)
+
         with transaction.atomic():
             try:
                 pedido = Store.objects.select_for_update().select_related("stock__product").get(id=pk, barber=barber)
@@ -156,7 +163,7 @@ class StoreConfirmView(APIView):
 
             StockMovement.objects.create(product=pedido.stock.product, type="saida", quantity=pedido.quantity_sold, description="Entrega de pedido da loja")
             pedido.stock.refresh_from_db()
-            Finances.objects.create(store=pedido, barber=barber, tipo="entrada", valor=pedido.stock.product.price * pedido.quantity_sold, date=now().date(), payment_method="dinheiro", categoria="outros")
+            Finances.objects.create(store=pedido, barber=barber, tipo="entrada", valor=pedido.stock.product.price * pedido.quantity_sold, date=now().date(), payment_method=payment_method, categoria="outros")
             pedido.status = "entregue"
             pedido.save(update_fields=["status"])
 

@@ -12,5 +12,6 @@ backend/staticfiles/
 *.puml
 *.docx
 ~$*.docx
+TG_*.pdf
 .clinerules
 ARCHITECTURE.md

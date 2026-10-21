@@ -401,3 +401,91 @@
         padding: 14px;
     }
 }
+
+/* ===== FOLGAS E FÉRIAS ===== */
+.dia-pill.folga {
+    border-style: dashed;
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.aviso-folga {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid #f59e0b;
+    color: #fbbf24;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.aviso-folga button,
+.folga-lista button {
+    background: none;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.folga-datas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.folga-atalhos {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.folga-atalhos button {
+    background: #222;
+    border: 1px solid #2a2a2a;
+    color: #d1d5db;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.folga-atalhos button:hover {
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+.folga-titulo {
+    color: white;
+    font-size: 15px;
+    margin: 24px 0 10px;
+}
+
+.folga-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.folga-lista li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #222;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #e5e7eb;
+    font-size: 14px;
+}

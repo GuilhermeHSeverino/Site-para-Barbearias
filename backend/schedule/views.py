@@ -2,9 +2,10 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 from datetime import datetime, timedelta
-from .models import Schedule, Vacation, WaitlistEntry
+from .models import Schedule, Vacation, WaitlistEntry, INTERVALO_ENTRE_ATENDIMENTOS_MIN
 from .serializers import ScheduleSerializer
 from barber.models import Barber
 from client.models import Client
@@ -20,18 +21,27 @@ class ScheduleCreateListView(generics.ListCreateAPIView):
         # BARBEIRO
         if Barber.objects.filter(user=user).exists():
             barber = Barber.objects.get(user=user)
-            return Schedule.objects.filter(barber=barber)\
-                .select_related('barber', 'service', 'client_name')\
-                .order_by('date', 'start_time')
-
+            queryset = Schedule.objects.filter(barber=barber)
         # CLIENTE
-        if Client.objects.filter(user=user).exists():
+        elif Client.objects.filter(user=user).exists():
             client = Client.objects.get(user=user)
-            return Schedule.objects.filter(client_name=client)\
-                .select_related('barber', 'service', 'client_name')\
-                .order_by('date', 'start_time')
+            queryset = Schedule.objects.filter(client_name=client)
+        else:
+            return Schedule.objects.none()
 
-        return Schedule.objects.none()
+        # filtro opcional por período (?data_inicio=AAAA-MM-DD&data_fim=AAAA-MM-DD),
+        # para as telas não precisarem baixar todo o histórico
+        try:
+            data_inicio = self.request.query_params.get("data_inicio")
+            data_fim = self.request.query_params.get("data_fim")
+            if data_inicio:
+                queryset = queryset.filter(date__gte=datetime.strptime(data_inicio, "%Y-%m-%d").date())
+            if data_fim:
+                queryset = queryset.filter(date__lte=datetime.strptime(data_fim, "%Y-%m-%d").date())
+        except ValueError:
+            raise ValidationError({"detail": "Datas devem estar no formato AAAA-MM-DD."})
+
+        return queryset.select_related('barber', 'service', 'client_name').order_by('date', 'start_time')
 
     def perform_create(self, serializer):
         serializer.save()
@@ -142,7 +152,7 @@ class ScheduleAvailabilityView(APIView):
                 for agendamento in ocupados:
                     ocupado_inicio = minutos(agendamento.start_time)
                     ocupado_fim = minutos(agendamento.end_time)
-                    if inicio < ocupado_fim + 8 and fim > ocupado_inicio:
+                    if inicio < ocupado_fim + INTERVALO_ENTRE_ATENDIMENTOS_MIN and fim > ocupado_inicio:
                         conflita = True
                         break
 
@@ -152,35 +162,64 @@ class ScheduleAvailabilityView(APIView):
         return Response({"slots": slots})
 
 
-class VacationCreateView(APIView):
+class VacationListCreateView(APIView):
     permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def serializar(vacation):
+        return {"id": vacation.id, "start_date": vacation.start_date, "end_date": vacation.end_date}
+
+    def get(self, request):
+        barber = Barber.objects.filter(user=request.user).first()
+        if not barber:
+            return Response({"detail": "Apenas barbeiros podem consultar folgas e férias."}, status=403)
+        futuras = Vacation.objects.filter(barber=barber, end_date__gte=timezone.localdate())
+        return Response([self.serializar(v) for v in futuras])
 
     def post(self, request):
         barber = Barber.objects.filter(user=request.user).first()
         if not barber:
             return Response({"detail": "Apenas barbeiros podem bloquear férias."}, status=403)
 
-        month = request.data.get("month")
-        if not month:
-            return Response({"detail": "Informe o mês das férias."}, status=400)
-
         try:
-            year, month_number = [int(value) for value in month.split("-")]
-            from calendar import monthrange
-            start_date = datetime(year, month_number, 1).date()
-            end_date = datetime(year, month_number, monthrange(year, month_number)[1]).date()
-        except (ValueError, TypeError):
-            return Response({"detail": "Mês inválido."}, status=400)
+            if request.data.get("month"):
+                # compatibilidade: bloqueio do mês inteiro
+                from calendar import monthrange
+                year, month_number = [int(value) for value in request.data["month"].split("-")]
+                start_date = datetime(year, month_number, 1).date()
+                end_date = datetime(year, month_number, monthrange(year, month_number)[1]).date()
+            else:
+                start_date = datetime.strptime(request.data.get("start_date", ""), "%Y-%m-%d").date()
+                end_date = datetime.strptime(request.data.get("end_date") or request.data.get("start_date", ""), "%Y-%m-%d").date()
+        except (ValueError, TypeError, AttributeError):
+            return Response({"detail": "Informe datas válidas para o bloqueio."}, status=400)
 
-        if end_date < timezone.now().date():
-            return Response({"detail": "Escolha um mês atual ou futuro."}, status=400)
+        hoje = timezone.localdate()
+        if end_date < start_date:
+            return Response({"detail": "A data final não pode ser anterior à data inicial."}, status=400)
+        if end_date < hoje:
+            return Response({"detail": "Escolha um período atual ou futuro."}, status=400)
+        start_date = max(start_date, hoje)
 
-        vacation, created = Vacation.objects.get_or_create(
-            barber=barber,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        return Response({"id": vacation.id, "start_date": vacation.start_date, "end_date": vacation.end_date}, status=201 if created else 200)
+        if Vacation.objects.filter(barber=barber, start_date__lte=end_date, end_date__gte=start_date).exists():
+            return Response({"detail": "Já existe uma folga ou férias cobrindo parte desse período."}, status=400)
+
+        vacation = Vacation.objects.create(barber=barber, start_date=start_date, end_date=end_date)
+        # agendamentos já marcados no período não são cancelados automaticamente; o barbeiro é avisado
+        agendamentos = Schedule.objects.filter(
+            barber=barber, date__range=(start_date, end_date), status__in=["agendado", "confirmado"]
+        ).count()
+        return Response({**self.serializar(vacation), "agendamentos_no_periodo": agendamentos}, status=201)
+
+
+class VacationDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        deleted, _ = Vacation.objects.filter(id=pk, barber__user=request.user).delete()
+        if not deleted:
+            return Response({"detail": "Bloqueio não encontrado."}, status=404)
+        return Response(status=204)
 
 
 class WaitlistCreateView(APIView):

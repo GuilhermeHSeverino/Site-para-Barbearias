@@ -36,24 +36,28 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          <Route path="/cliente" element={<Cliente />} />
-          <Route path="/cliente/agendar" element={<ClienteLayout><AgendarServico /></ClienteLayout>} />
-          <Route path="/cliente/feedback" element={<ClienteLayout><EnviarFeedback /></ClienteLayout>} />
-          <Route path="/cliente/historico" element={<ClienteLayout><MeusAgendamentos /></ClienteLayout>} />
-          <Route path="/cliente/loja" element={<ClienteLayout><LojaCliente /></ClienteLayout>} />
-          <Route path="/cliente/pedidos" element={<ClienteLayout><PedidosLojaCliente /></ClienteLayout>} />
+          <Route element={<ProtectedRoute perfil="cliente" />}>
+            <Route path="/cliente" element={<Cliente />} />
+            <Route path="/cliente/agendar" element={<ClienteLayout><AgendarServico /></ClienteLayout>} />
+            <Route path="/cliente/feedback" element={<ClienteLayout><EnviarFeedback /></ClienteLayout>} />
+            <Route path="/cliente/historico" element={<ClienteLayout><MeusAgendamentos /></ClienteLayout>} />
+            <Route path="/cliente/loja" element={<ClienteLayout><LojaCliente /></ClienteLayout>} />
+            <Route path="/cliente/pedidos" element={<ClienteLayout><PedidosLojaCliente /></ClienteLayout>} />
+          </Route>
 
-          <Route path="/barbeiro/" element={<BarberLayout><MenuBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/agenda" element={<BarberLayout><AgendaBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/clientes" element={<BarberLayout><ClientesBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/clientes/:id" element={<BarberLayout><PerfilClienteBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/estoque" element={<BarberLayout><EstoqueBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/feedbacks" element={<BarberLayout><FeedbacksBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/financas" element={<BarberLayout><FinancasBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/servicos" element={<BarberLayout><ServicosBarbeiro /></BarberLayout>} />
-          <Route path="/barbeiro/configuracoes" element={<BarberLayout><ConfiguracoesBarbeiro /></BarberLayout>} />
+          <Route element={<ProtectedRoute perfil="barbeiro" />}>
+            <Route path="/barbeiro/" element={<BarberLayout><MenuBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/agenda" element={<BarberLayout><AgendaBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/clientes" element={<BarberLayout><ClientesBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/clientes/:id" element={<BarberLayout><PerfilClienteBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/estoque" element={<BarberLayout><EstoqueBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/feedbacks" element={<BarberLayout><FeedbacksBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/financas" element={<BarberLayout><FinancasBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/servicos" element={<BarberLayout><ServicosBarbeiro /></BarberLayout>} />
+            <Route path="/barbeiro/configuracoes" element={<BarberLayout><ConfiguracoesBarbeiro /></BarberLayout>} />
             <Route path="/barbeiro/notificacoes" element={<BarberLayout><NotificacoesBarbeiro /></BarberLayout>} />
             <Route path="/barbeiro/perfil-publico" element={<BarberLayout><PerfilPublicoBarbeiro /></BarberLayout>} />
+          </Route>
 
         </Routes>
       </BrowserRouter>

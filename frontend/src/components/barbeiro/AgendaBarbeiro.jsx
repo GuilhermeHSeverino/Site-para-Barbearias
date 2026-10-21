@@ -23,6 +23,15 @@ function gerarHorarios() {
 
 const HORARIOS = gerarHorarios();
 
+// data no fuso local (toISOString usaria UTC e trocaria o dia à noite)
+function dataLocal(d = new Date()) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatarData(iso) {
+    return iso.split("-").reverse().join("/");
+}
+
 function AgendaBarbeiro() {
     const [agendamentos, setAgendamentos] = useState([]);
     const [servicos, setServicos] = useState([]);
@@ -35,10 +44,9 @@ function AgendaBarbeiro() {
     // modal de novo agendamento
     const [modalAberto, setModalAberto] = useState(false);
     const [feriasModalAberto, setFeriasModalAberto] = useState(false);
-    const [mesFerias, setMesFerias] = useState(() => {
-        const hoje = new Date();
-        return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-    });
+    const [folgas, setFolgas] = useState([]);
+    const [folgaInicio, setFolgaInicio] = useState("");
+    const [folgaFim, setFolgaFim] = useState("");
     const [salvandoFerias, setSalvandoFerias] = useState(false);
     const [isBloqueio, setIsBloqueio] = useState(false);
     const [buscaCliente, setBuscaCliente] = useState("");
@@ -68,24 +76,28 @@ function AgendaBarbeiro() {
     })();
 
     useEffect(() => {
-        const hoje = new Date().toISOString().split("T")[0];
-        setDiaSelecionado(hoje);
+        setDiaSelecionado(dataLocal());
         carregarTudo();
     }, []);
 
     const carregarTudo = async () => {
         setCarregando(true);
         try {
-            const [agRes, servRes, cliRes, esperaRes] = await Promise.all([
-                api.get("/api/v1/schedule/"),
+            const fimSemana = new Date();
+            fimSemana.setDate(fimSemana.getDate() + 6);
+            const [agRes, servRes, cliRes, esperaRes, folgasRes] = await Promise.all([
+                // só os 7 dias exibidos na agenda, não o histórico inteiro
+                api.get("/api/v1/schedule/", { params: { data_inicio: dataLocal(), data_fim: dataLocal(fimSemana) } }),
                 api.get("/api/v1/services/"),
                 api.get("/api/v1/client/"),
                 api.get("/api/v1/schedule/waitlist/pending/"),
+                api.get("/api/v1/schedule/vacations/"),
             ]);
             setAgendamentos(agRes.data);
             setServicos(servRes.data);
             setClientes(cliRes.data);
             setListaEspera(esperaRes.data);
+            setFolgas(folgasRes.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -118,8 +130,10 @@ function AgendaBarbeiro() {
     const proximosDias = [...Array(7)].map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() + i);
-        return d.toISOString().split("T")[0];
+        return dataLocal(d);
     });
+
+    const folgaDoDia = (dia) => folgas.find((f) => f.start_date <= dia && dia <= f.end_date);
 
     // ===== AÇÕES SOBRE AGENDAMENTO EXISTENTE =====
 
@@ -176,17 +190,44 @@ function AgendaBarbeiro() {
         setErroModal("");
     };
 
-    const bloquearMesFerias = async () => {
-        if (!mesFerias) return;
+    const abrirFolgas = () => {
+        setFolgaInicio(diaSelecionado);
+        setFolgaFim(diaSelecionado);
+        setFeriasModalAberto(true);
+    };
+
+    const usarMesInteiro = () => {
+        const base = new Date(`${folgaInicio || diaSelecionado}T12:00:00`);
+        const hoje = dataLocal();
+        const primeiroDia = dataLocal(new Date(base.getFullYear(), base.getMonth(), 1));
+        setFolgaInicio(primeiroDia < hoje ? hoje : primeiroDia);
+        setFolgaFim(dataLocal(new Date(base.getFullYear(), base.getMonth() + 1, 0)));
+    };
+
+    const bloquearFolga = async () => {
+        if (!folgaInicio || !folgaFim) return;
         setSalvandoFerias(true);
         try {
-            await api.post("/api/v1/schedule/vacations/", { month: mesFerias });
-            setFeriasModalAberto(false);
-            alert("Mês bloqueado como férias. Os clientes não poderão agendar nesse período.");
+            const res = await api.post("/api/v1/schedule/vacations/", { start_date: folgaInicio, end_date: folgaFim });
+            const qtd = res.data.agendamentos_no_periodo;
+            if (qtd > 0) {
+                alert(`Período bloqueado. Atenção: você já tem ${qtd} agendamento(s) nesse período; cancele ou remarque com os clientes.`);
+            }
+            await carregarTudo();
         } catch (err) {
-            alert(err.response?.data?.detail || "Não foi possível bloquear o mês.");
+            alert(err.response?.data?.detail || "Não foi possível bloquear o período.");
         } finally {
             setSalvandoFerias(false);
+        }
+    };
+
+    const removerFolga = async (id) => {
+        if (!window.confirm("Remover este bloqueio? Os dias voltarão a ficar disponíveis para agendamento.")) return;
+        try {
+            await api.delete(`/api/v1/schedule/vacations/${id}/`);
+            await carregarTudo();
+        } catch (err) {
+            alert(err.response?.data?.detail || "Não foi possível remover o bloqueio.");
         }
     };
 
@@ -347,15 +388,16 @@ function AgendaBarbeiro() {
                             <button
                                 key={dia}
                                 onClick={() => setDiaSelecionado(dia)}
-                                className={`dia-pill ${dia === diaSelecionado ? "ativo" : ""}`}
+                                className={`dia-pill ${dia === diaSelecionado ? "ativo" : ""} ${folgaDoDia(dia) ? "folga" : ""}`}
+                                title={folgaDoDia(dia) ? "Dia de folga/férias" : undefined}
                             >
-                                {dia.split("-").reverse().join("/")}
+                                {formatarData(dia)}
                             </button>
                         ))}
                     </div>
                     <div className="agenda-acoes-topo">
-                        <button className="btn-ferias" onClick={() => setFeriasModalAberto(true)}>
-                            Bloquear férias
+                        <button className="btn-ferias" onClick={abrirFolgas}>
+                            Folgas e férias
                         </button>
                         <button className="btn-novo-agendamento" onClick={abrirModal}>
                             + Novo Agendamento
@@ -363,6 +405,13 @@ function AgendaBarbeiro() {
                     </div>
                 </div>
             </div>
+
+            {folgaDoDia(diaSelecionado) && (
+                <div className="aviso-folga">
+                    <span>Dia bloqueado como folga/férias: os clientes não conseguem agendar.</span>
+                    <button onClick={() => removerFolga(folgaDoDia(diaSelecionado).id)}>Remover bloqueio</button>
+                </div>
+            )}
 
             {/* TIMELINE */}
             <div className="agenda-timeline-card">
@@ -435,13 +484,42 @@ function AgendaBarbeiro() {
                 <div className="modal-backdrop" onClick={() => setFeriasModalAberto(false)}>
                     <div className="modal-card pequeno" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Bloquear mês de férias</h2>
+                            <h2>Folgas e férias</h2>
                             <button className="modal-fechar" onClick={() => setFeriasModalAberto(false)}>✕</button>
                         </div>
-                        <p className="modal-data-info">Todos os dias do mês ficarão indisponíveis para novos agendamentos.</p>
-                        <label className="modal-label" htmlFor="mes-ferias">Mês das férias</label>
-                        <input id="mes-ferias" className="modal-input" type="month" value={mesFerias} onChange={(e) => setMesFerias(e.target.value)} />
-                        <button className="modal-confirmar" onClick={bloquearMesFerias} disabled={salvandoFerias}>{salvandoFerias ? "Bloqueando..." : "Confirmar férias"}</button>
+                        <p className="modal-data-info">Os dias bloqueados ficam indisponíveis para novos agendamentos. Para bloquear um único dia, use a mesma data em "De" e "Até".</p>
+                        <div className="folga-datas">
+                            <div>
+                                <label className="modal-label" htmlFor="folga-inicio">De</label>
+                                <input id="folga-inicio" className="modal-input" type="date" min={dataLocal()} value={folgaInicio}
+                                    onChange={(e) => { setFolgaInicio(e.target.value); if (!folgaFim || e.target.value > folgaFim) setFolgaFim(e.target.value); }} />
+                            </div>
+                            <div>
+                                <label className="modal-label" htmlFor="folga-fim">Até</label>
+                                <input id="folga-fim" className="modal-input" type="date" min={folgaInicio || dataLocal()} value={folgaFim} onChange={(e) => setFolgaFim(e.target.value)} />
+                            </div>
+                        </div>
+                        <div className="folga-atalhos">
+                            <button type="button" onClick={() => { setFolgaInicio(diaSelecionado); setFolgaFim(diaSelecionado); }}>Só {formatarData(diaSelecionado)}</button>
+                            <button type="button" onClick={usarMesInteiro}>Mês inteiro</button>
+                        </div>
+                        <button className="modal-confirmar" onClick={bloquearFolga} disabled={salvandoFerias || !folgaInicio || !folgaFim}>
+                            {salvandoFerias ? "Bloqueando..." : folgaInicio === folgaFim ? `Bloquear ${formatarData(folgaInicio || diaSelecionado)}` : "Bloquear período"}
+                        </button>
+
+                        <h3 className="folga-titulo">Bloqueios programados</h3>
+                        {folgas.length === 0 ? (
+                            <p className="modal-data-info">Nenhuma folga ou férias programada.</p>
+                        ) : (
+                            <ul className="folga-lista">
+                                {folgas.map((f) => (
+                                    <li key={f.id}>
+                                        <span>{f.start_date === f.end_date ? formatarData(f.start_date) : `${formatarData(f.start_date)} a ${formatarData(f.end_date)}`}</span>
+                                        <button onClick={() => removerFolga(f.id)}>Remover</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </div>
             )}

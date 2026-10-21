@@ -4,10 +4,18 @@ import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./estoque.css";
 
+const PAGAMENTOS = [
+    { value: "dinheiro", label: "Dinheiro" },
+    { value: "cartao_credito", label: "Cartão de Crédito" },
+    { value: "cartao_debito", label: "Cartão de Débito" },
+    { value: "pix", label: "Pix" },
+];
+
 export default function EstoqueBarbeiro() {
     const [produtos, setProdutos] = useState([]);
     const [movimentos, setMovimentos] = useState([]);
     const [pedidos, setPedidos] = useState([]);
+    const [pagamentoPedido, setPagamentoPedido] = useState({});
     const [busca, setBusca] = useState("");
     const navigate = useNavigate();
 
@@ -71,7 +79,7 @@ export default function EstoqueBarbeiro() {
 
     const confirmarEntrega = async (id) => {
         try {
-            await api.patch(`/api/v1/stores/${id}/confirm/`, { payment_method: "pix" }, config);
+            await api.patch(`/api/v1/stores/${id}/confirm/`, { payment_method: pagamentoPedido[id] || "dinheiro" }, config);
             await carregarPedidos();
             await carregarProdutos();
             await carregarMovimentos();
@@ -177,7 +185,7 @@ export default function EstoqueBarbeiro() {
 
             {pedidos.length > 0 && <div className="movimento-card" style={{ marginBottom: "24px" }}>
                 <h2>Pedidos aguardando retirada</h2>
-                <div className="lista">{pedidos.map((pedido) => <div className="item" key={pedido.id}><div><strong>{pedido.product}</strong><p>{pedido.client} · Quantidade: {pedido.quantity}</p></div><button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>Confirmar entrega</button></div>)}</div>
+                <div className="lista">{pedidos.map((pedido) => <div className="item" key={pedido.id}><div><strong>{pedido.product}</strong><p>{pedido.client} · Quantidade: {pedido.quantity}</p></div><div style={{ display: "flex", gap: "8px", alignItems: "center" }}><select aria-label="Forma de pagamento" value={pagamentoPedido[pedido.id] || "dinheiro"} onChange={(e) => setPagamentoPedido({ ...pagamentoPedido, [pedido.id]: e.target.value })}>{PAGAMENTOS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}</select><button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>Confirmar entrega</button></div></div>)}</div>
             </div>}
 
             <div className="movimento-card" style={{ marginBottom: "24px" }}>

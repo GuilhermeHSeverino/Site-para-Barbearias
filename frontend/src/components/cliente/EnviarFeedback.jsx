@@ -36,7 +36,8 @@ function EnviarFeedback() {
       setComentario("");
       setNota(5);
     } catch (error) {
-      alert("Erro ao enviar feedback.");
+      const detalhe = error.response?.data?.detail;
+      alert((Array.isArray(detalhe) ? detalhe[0] : detalhe) || "Erro ao enviar feedback.");
       console.error(error);
     }
   };

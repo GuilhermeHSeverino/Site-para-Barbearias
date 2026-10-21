@@ -4,6 +4,9 @@ from barber.models import Barber
 from client.models import Client
 from services.models import Services
 
+# folga mínima, em minutos, entre o fim de um atendimento e o início do próximo
+INTERVALO_ENTRE_ATENDIMENTOS_MIN = 8
+
 class Schedule(models.Model):
 
     STATUS_CHOICES = [
