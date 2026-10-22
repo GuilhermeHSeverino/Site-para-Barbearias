@@ -19,7 +19,7 @@ export default function ClienteLayout({ children }) {
     const [menuAberto, setMenuAberto] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/client-notifications/");
+    const { aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/client-notifications/");
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
 
@@ -64,9 +64,6 @@ export default function ClienteLayout({ children }) {
                         >
                             <span>{link.icone}</span>
                             {link.nome}
-                            {link.rota === "/cliente" && naoLidas > 0 && (
-                                <span className="contador-notificacoes" title="Notificações não lidas">{naoLidas}</span>
-                            )}
                         </button>
                     ))}
                 </nav>

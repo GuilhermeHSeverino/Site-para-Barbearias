@@ -25,7 +25,7 @@ export default function BarberLayout({ children }) {
     const [perfil, setPerfil] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
-    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/notifications/");
+    const { aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/notifications/");
 
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
@@ -65,11 +65,6 @@ export default function BarberLayout({ children }) {
                     ☰
                 </button>
                 <span className="topbar-logo">💈 Barbearia</span>
-                {naoLidas > 0 && (
-                    <button className="contador-notificacoes" style={{ border: "none", cursor: "pointer" }} onClick={() => navigate("/barbeiro/notificacoes")}>
-                        🔔 {naoLidas}
-                    </button>
-                )}
             </div>
 
             {/* BACKDROP (mobile, quando o menu está aberto) */}
@@ -101,9 +96,6 @@ export default function BarberLayout({ children }) {
                             >
                                 <span className="sidebar-icone">{link.icone}</span>
                                 {link.nome}
-                                {link.rota === "/barbeiro/notificacoes" && naoLidas > 0 && (
-                                    <span className="contador-notificacoes">{naoLidas}</span>
-                                )}
                             </button>
                         );
                     })}

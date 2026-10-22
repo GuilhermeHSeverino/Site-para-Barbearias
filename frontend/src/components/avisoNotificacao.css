@@ -46,17 +46,6 @@
     cursor: pointer;
 }
 
-.contador-notificacoes {
-    margin-left: auto;
-    min-width: 20px;
-    padding: 1px 7px;
-    border-radius: 999px;
-    background: #ef4444;
-    color: white;
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-}
 
 @keyframes aviso-entrar {
     from { opacity: 0; transform: translateY(10px); }
