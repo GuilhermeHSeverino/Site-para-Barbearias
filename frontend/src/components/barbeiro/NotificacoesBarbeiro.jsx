@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 const ICONES = { STOCK_LOW: "📦", REMINDER: "⏰", REVIEW: "⭐" };
 
@@ -16,7 +17,7 @@ export default function NotificacoesBarbeiro() {
             setNotificacoes(res.data);
         } catch (error) {
             console.error("Erro ao carregar notificações:", error);
-            setErro("Não foi possível carregar as notificações.");
+            setErro(mensagemDeErro(error, "Não foi possível carregar as notificações."));
         } finally {
             setLoading(false);
         }

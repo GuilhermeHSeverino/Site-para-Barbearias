@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 import "./agenda.css"; // Reusing some of the premium styles
 
 const PROFILE_ENDPOINT = "/api/v1/profile/update/";
@@ -65,7 +66,7 @@ export default function ConfiguracoesBarbeiro() {
             alert("Perfil atualizado com sucesso!");
         } catch (err) {
             console.error("Erro ao salvar perfil:", err.response?.data || err);
-            alert("Erro ao salvar perfil.");
+            alert(mensagemDeErro(err, "Não foi possível salvar o perfil."));
         } finally {
             setSaving(false);
         }

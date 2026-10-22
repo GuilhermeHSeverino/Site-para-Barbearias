@@ -18,4 +18,5 @@
 .auth-switch { margin: 22px 0 0; color: #9ca3af; font-size: 13px; text-align: center; }
 .auth-switch a { color: #4ade80; font-weight: 700; text-decoration: none; }
 .auth-error { margin-bottom: 16px; padding: 11px 13px; border: 1px solid #7f1d1d; border-radius: 8px; background: #2a1414; color: #fca5a5; font-size: 13px; }
+.auth-sucesso { margin-bottom: 16px; padding: 11px 13px; border: 1px solid #166534; border-radius: 8px; background: #0f2a1a; color: #86efac; font-size: 13px; }
 @media (max-width: 760px) { .auth-page { grid-template-columns: 1fr; } .auth-showcase { min-height: 270px; padding: 48px 9%; } .auth-showcase h1 { font-size: 40px; } .auth-panel { padding: 38px 9%; } }

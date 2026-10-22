@@ -3,12 +3,25 @@ import { ACCESS_TOKEN } from "../../constants";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import "./clienteFlow.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
+import MostrarMais from "../MostrarMais";
+
+// próximos horários primeiro (do mais perto ao mais distante), depois os passados (do mais recente ao mais antigo)
+function ordenarAgendamentos(lista) {
+  const agora = new Date();
+  const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
+  const chave = (a) => `${a.date}${a.start_time}`;
+  const proximos = lista.filter((a) => a.date >= hoje).sort((a, b) => chave(a).localeCompare(chave(b)));
+  const passados = lista.filter((a) => a.date < hoje).sort((a, b) => chave(b).localeCompare(chave(a)));
+  return [...proximos, ...passados];
+}
 
 function MeusAgendamentos() {
   const [agendamentos, setAgendamentos] = useState([]);
   const [barbeiros, setBarbeiros] = useState([]);
   const [servicos, setServicos] = useState([]);
   const [cancelando, setCancelando] = useState(null);
+  const [visiveis, setVisiveis] = useState(10);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,7 +31,6 @@ function MeusAgendamentos() {
     api
       .get("/api/v1/schedule/")
       .then((res) => {
-        console.log("AGENDAMENTOS:", res.data);
         setAgendamentos(res.data);
       })
       .catch((err) => console.error(err));
@@ -69,7 +81,7 @@ function MeusAgendamentos() {
       await api.patch(`/api/v1/schedule/${id}/cancel/`);
       setAgendamentos((atuais) => atuais.map((item) => item.id === id ? { ...item, status: "cancelado" } : item));
     } catch (error) {
-      window.alert(error.response?.data?.detail || "Não foi possível cancelar o corte.");
+      window.alert(mensagemDeErro(error, "Não foi possível cancelar o horário."));
     } finally {
       setCancelando(null);
     }
@@ -87,7 +99,7 @@ function MeusAgendamentos() {
           <div className="cliente-fluxo-vazio">Você ainda não realizou nenhum agendamento.</div>
         ) : (
           <div className="cliente-agendamento-lista">
-            {agendamentos.map((agendamento) => {
+            {ordenarAgendamentos(agendamentos).slice(0, visiveis).map((agendamento) => {
               const status = agendamento.status?.toLowerCase() || "agendado";
               const statusLabel = {
                 agendado: "Agendado",
@@ -104,7 +116,7 @@ function MeusAgendamentos() {
                     </div>
                     <span className={`cliente-status ${status}`}>{statusLabel}</span>
                   </div>
-                  <p>📅 {agendamento.date.split("-").reverse().join("/")} às {agendamento.start_time}</p>
+                  <p>📅 {agendamento.date.split("-").reverse().join("/")} às {agendamento.start_time.slice(0, 5)}</p>
                   {status === "agendado" || status === "confirmado" ? <button className="cliente-avaliar cliente-cancelar" onClick={() => cancelarAgendamento(agendamento.id)} disabled={cancelando === agendamento.id}>{cancelando === agendamento.id ? "Cancelando..." : "Cancelar corte"}</button> : null}
                   {status === "agendado" || status === "confirmado" ? <button className="cliente-avaliar" onClick={() => navigate(`/cliente/agendar?reagendar=${agendamento.id}&barber=${agendamento.barber}&service=${agendamento.service}`)}>Reagendar corte →</button> : null}
                   {status === "concluido" && <button className="cliente-avaliar" onClick={() => handleAvaliar(agendamento.barber)}>Avaliar atendimento →</button>}
@@ -113,6 +125,7 @@ function MeusAgendamentos() {
             })}
           </div>
         )}
+        <MostrarMais total={agendamentos.length} visiveis={visiveis} onMostrar={setVisiveis} />
       </div>
     </div>
   );

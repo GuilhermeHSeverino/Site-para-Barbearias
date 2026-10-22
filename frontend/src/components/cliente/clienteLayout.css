@@ -70,3 +70,13 @@
     .cliente-titulo-pagina { width: 92%; padding: 18px 0; }
     .cliente-titulo-pagina h1 { font-size: 20px; }
 }
+
+/* menu lateral: os links rolam e o rodapé (conta e Sair) fica sempre visível */
+.cliente-sidebar { min-height: 0; height: 100vh; height: 100dvh; }
+.cliente-nav { flex: 1; min-height: 0; overflow-y: auto; }
+.cliente-sidebar-rodape { flex-shrink: 0; }
+
+@media (max-width: 992px) {
+    .cliente-sidebar { width: min(280px, 85vw); }
+    .cliente-sidebar-rodape { padding: 14px 16px; }
+}

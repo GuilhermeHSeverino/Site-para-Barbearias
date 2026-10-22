@@ -391,3 +391,46 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+
+/* pedidos aguardando retirada: dados à esquerda, pagamento e confirmação à direita */
+.pedido-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px;
+    border-bottom: 1px solid #262626;
+}
+
+.pedido-item p {
+    color: #9ca3af;
+    margin: 4px 0 0;
+}
+
+.pedido-acoes {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pedido-acoes .btn-confirmar-mov {
+    margin-top: 0;
+}
+
+.pedido-pagamento {
+    background: #222;
+    border: 1px solid #2d2d2d;
+    color: white;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+@media (max-width: 600px) {
+    .pedido-acoes,
+    .pedido-pagamento,
+    .pedido-acoes .btn-confirmar-mov {
+        width: 100%;
+    }
+}

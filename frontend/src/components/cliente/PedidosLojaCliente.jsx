@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
 import "./clienteFlow.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 const STATUS = { pendente: "Aguardando entrega", entregue: "Entregue", cancelado: "Cancelado" };
 
@@ -23,7 +24,7 @@ export default function PedidosLojaCliente() {
             await api.patch(`/api/v1/stores/${id}/cancel/`);
             setPedidos((atuais) => atuais.map((pedido) => pedido.id === id ? { ...pedido, status: "cancelado" } : pedido));
         } catch (error) {
-            window.alert(error.response?.data?.detail || "Não foi possível cancelar o pedido.");
+            window.alert(mensagemDeErro(error, "Não foi possível cancelar o pedido."));
         } finally {
             setCancelando(null);
         }

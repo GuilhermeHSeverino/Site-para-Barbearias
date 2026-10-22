@@ -4,6 +4,8 @@ import { jwtDecode } from "jwt-decode";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./feedbacks.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
+import MostrarMais from "../MostrarMais";
 
 function Estrelas({ rating }) {
     // rating vai de 1 a 10, convertendo pra escala de 5 estrelas
@@ -29,6 +31,7 @@ function corDaNota(rating) {
 
 function FeedbacksBarbeiro() {
     const [feedbacks, setFeedbacks] = useState([]);
+    const [visiveis, setVisiveis] = useState(10);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState("");
     const navigate = useNavigate();
@@ -67,7 +70,7 @@ function FeedbacksBarbeiro() {
             setFeedbacks(meus);
         } catch (err) {
             console.error("Erro ao carregar feedbacks:", err);
-            setErro("Não foi possível carregar os feedbacks.");
+            setErro(mensagemDeErro(err, "Não foi possível carregar os feedbacks."));
         } finally {
             setLoading(false);
         }
@@ -136,7 +139,7 @@ function FeedbacksBarbeiro() {
                     <p className="estado-msg">Nenhum feedback encontrado.</p>
                 ) : (
                     <div className="feedbacks-grid">
-                        {feedbacks.map((fb) => (
+                        {[...feedbacks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, visiveis).map((fb) => (
                             <div key={fb.id} className="feedback-item">
                                 <div className="feedback-topo">
                                     <Estrelas rating={fb.rating} />
@@ -154,6 +157,7 @@ function FeedbacksBarbeiro() {
                         ))}
                     </div>
                 )}
+                <MostrarMais total={feedbacks.length} visiveis={visiveis} onMostrar={setVisiveis} />
             </div>
 
         </div>

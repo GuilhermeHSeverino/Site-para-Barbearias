@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import { jwtDecode } from "jwt-decode";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 /**
  * Componente de Perfil do Cliente para o Barbeiro.
@@ -77,7 +78,7 @@ function PerfilClienteBarbeiro() {
             setFeedback("Nota salva com sucesso.");
         } catch (err) {
             console.error("Erro ao salvar nota:", err);
-            setFeedback("Não foi possível salvar a nota.");
+            setFeedback(mensagemDeErro(err, "Não foi possível salvar a nota."));
         } finally {
             setSaving(false);
         }

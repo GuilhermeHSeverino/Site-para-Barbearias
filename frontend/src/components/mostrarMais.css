@@ -1,0 +1,17 @@
+.botao-mostrar-mais {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: none;
+    border: 1px solid #2d2d2d;
+    border-radius: 10px;
+    color: #d1d5db;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.botao-mostrar-mais:hover {
+    border-color: #22c55e;
+    color: #22c55e;
+}

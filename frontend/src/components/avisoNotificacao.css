@@ -62,3 +62,15 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* no celular o aviso aparece no topo, logo abaixo da barra, e fica atrás do menu aberto */
+@media (max-width: 600px) {
+    .aviso-notificacao {
+        top: 68px;
+        bottom: auto;
+        left: 12px;
+        right: 12px;
+        max-width: none;
+        z-index: 24;
+    }
+}

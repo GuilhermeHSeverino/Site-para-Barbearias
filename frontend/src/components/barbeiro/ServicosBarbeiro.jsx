@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 /**
  * Componente para Gestão de Serviços do Barbeiro.
@@ -29,7 +30,7 @@ function ServicosBarbeiro() {
             setServicos(res.data);
         } catch (err) {
             console.error("Erro ao carregar serviços:", err);
-            alert("Erro ao carregar serviços.");
+            alert(mensagemDeErro(err, "Não foi possível carregar os serviços."));
         } finally {
             setLoading(false);
         }
@@ -47,7 +48,7 @@ function ServicosBarbeiro() {
             carregarServicos();
         } catch (err) {
             console.error("Erro ao salvar serviço:", err);
-            alert("Erro ao salvar serviço. Verifique o formato da duração (HH:MM:SS).");
+            alert(mensagemDeErro(err, "Não foi possível salvar o serviço. Confira o preço e a duração (HH:MM:SS)."));
         }
     };
 
@@ -58,7 +59,7 @@ function ServicosBarbeiro() {
             carregarServicos();
         } catch (err) {
             console.error("Erro ao excluir serviço:", err);
-            alert("Erro ao excluir serviço.");
+            alert(mensagemDeErro(err, "Não foi possível excluir o serviço."));
         }
     };
 
@@ -94,10 +95,12 @@ function ServicosBarbeiro() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                flexWrap: 'wrap',
                 gap: '20px'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <button
+                        className="btn-voltar"
                         onClick={() => navigate("/barbeiro/")}
                         style={{
                             background: 'none',

@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./agenda.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 const PAGAMENTOS = [
     { value: "dinheiro", label: "Dinheiro" },
@@ -170,7 +171,7 @@ function AgendaBarbeiro() {
             carregarTudo();
         } catch (err) {
             console.error(err);
-            alert(err.response?.data?.detail || "Erro ao atualizar agendamento.");
+            alert(mensagemDeErro(err, "Não foi possível atualizar o agendamento."));
         }
     };
 
@@ -215,7 +216,7 @@ function AgendaBarbeiro() {
             }
             await carregarTudo();
         } catch (err) {
-            alert(err.response?.data?.detail || "Não foi possível bloquear o período.");
+            alert(mensagemDeErro(err, "Não foi possível bloquear o período."));
         } finally {
             setSalvandoFerias(false);
         }
@@ -227,7 +228,7 @@ function AgendaBarbeiro() {
             await api.delete(`/api/v1/schedule/vacations/${id}/`);
             await carregarTudo();
         } catch (err) {
-            alert(err.response?.data?.detail || "Não foi possível remover o bloqueio.");
+            alert(mensagemDeErro(err, "Não foi possível remover o bloqueio."));
         }
     };
 
@@ -261,11 +262,7 @@ function AgendaBarbeiro() {
             return res.data;
         } catch (err) {
             console.error(err);
-            setErroModal(
-                err.response?.data?.email?.[0] ||
-                err.response?.data?.detail ||
-                "Erro ao cadastrar cliente."
-            );
+            setErroModal(mensagemDeErro(err, "Erro ao cadastrar cliente."));
             return null;
         }
     };
@@ -339,11 +336,7 @@ function AgendaBarbeiro() {
             carregarTudo();
         } catch (err) {
             console.error(err);
-            setErroModal(
-                err.response?.data?.non_field_errors?.[0] ||
-                err.response?.data?.detail ||
-                "Erro ao criar agendamento."
-            );
+            setErroModal(mensagemDeErro(err, "Erro ao criar agendamento."));
         } finally {
             setSalvando(false);
         }
@@ -353,6 +346,7 @@ function AgendaBarbeiro() {
         <div className="agenda-container">
             <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <button
+                    className="btn-voltar"
                     onClick={() => navigate("/barbeiro/")}
                     style={{
                         background: 'none',
@@ -740,7 +734,7 @@ function AgendaBarbeiro() {
                         )}
 
                         <button
-                            className="btn-voltar"
+                            className="btn-voltar modal-voltar"
                             onClick={() => setAcaoAgendamento(null)}
                         >
                             ← Voltar

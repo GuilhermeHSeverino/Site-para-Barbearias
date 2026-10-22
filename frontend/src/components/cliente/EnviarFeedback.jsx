@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./clienteFlow.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 function EnviarFeedback() {
   const [barbeiros, setBarbeiros] = useState([]);
@@ -36,8 +37,7 @@ function EnviarFeedback() {
       setComentario("");
       setNota(5);
     } catch (error) {
-      const detalhe = error.response?.data?.detail;
-      alert((Array.isArray(detalhe) ? detalhe[0] : detalhe) || "Erro ao enviar feedback.");
+      alert(mensagemDeErro(error, "Não foi possível enviar sua avaliação."));
       console.error(error);
     }
   };

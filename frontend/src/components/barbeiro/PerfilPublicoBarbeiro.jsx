@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 export default function PerfilPublicoBarbeiro() {
     const [perfil, setPerfil] = useState(null);
@@ -27,7 +28,7 @@ export default function PerfilPublicoBarbeiro() {
             setServicos(servicosRes.data);
         } catch (error) {
             console.error("Erro ao carregar prévia pública:", error);
-            setErro("Não foi possível carregar a prévia do perfil.");
+            setErro(mensagemDeErro(error, "Não foi possível carregar a prévia do perfil."));
         } finally {
             setLoading(false);
         }

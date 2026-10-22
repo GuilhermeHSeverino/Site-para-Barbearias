@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./../../assets/financeiro.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
+import MostrarMais from "../MostrarMais";
 import {
     ResponsiveContainer,
     LineChart,
@@ -37,6 +39,7 @@ const CORES_PIZZA = ["#22c55e", "#3b82f6", "#facc15", "#ef4444", "#a855f7", "#14
 
 export default function FinancasBarbeiro() {
     const [financas, setFinancas] = useState([]);
+    const [visiveis, setVisiveis] = useState(10);
     const [faturamento, setFaturamento] = useState(0);
     const [saidas, setSaidas] = useState(0);
     const [saldo, setSaldo] = useState(0);
@@ -126,7 +129,7 @@ export default function FinancasBarbeiro() {
             );
         } catch (err) {
             console.error(err);
-            setErro("Não foi possível carregar os dados financeiros.");
+            setErro(mensagemDeErro(err, "Não foi possível carregar os dados financeiros."));
         } finally {
             setCarregando(false);
         }
@@ -307,7 +310,7 @@ export default function FinancasBarbeiro() {
                 ) : financas.length === 0 ? (
                     <p className="estado-msg">Nenhuma movimentação encontrada.</p>
                 ) : (
-                    financas.map((f) => (
+                    [...financas].reverse().slice(0, visiveis).map((f) => (
                         <div key={f.id} className="item">
                             <div>
                                 <p>{new Date(f.date).toLocaleDateString()}</p>
@@ -324,6 +327,7 @@ export default function FinancasBarbeiro() {
                         </div>
                     ))
                 )}
+                <MostrarMais total={financas.length} visiveis={visiveis} onMostrar={setVisiveis} />
             </div>
 
         </div>

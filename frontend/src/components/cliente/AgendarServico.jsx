@@ -3,6 +3,7 @@ import api from "../../api";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ACCESS_TOKEN } from "../../constants";
 import "./clienteFlow.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 export default function AgendarServico() {
   const [etapa, setEtapa] = useState(1);
@@ -59,7 +60,7 @@ export default function AgendarServico() {
           setServicos(res.data);
           setServico(servicoInicial ? Number(servicoInicial) : "");
         })
-        .catch(() => alert("Erro ao carregar serviços deste barbeiro."))
+        .catch((err) => alert(mensagemDeErro(err, "Não foi possível carregar os serviços deste barbeiro.")))
         .finally(() => setLoadingServices(false));
     }
   }, [barbeiro, servicoInicial]);
@@ -104,9 +105,7 @@ export default function AgendarServico() {
       })
       .then(() => navigate("/cliente/"))
       .catch((err) => {
-        const dados = err.response?.data;
-        const mensagem = dados?.detail || dados?.date?.[0] || dados?.non_field_errors?.[0] || dados?.client_name?.[0] || err.message;
-        alert("Não foi possível confirmar: " + mensagem);
+        alert("Não foi possível confirmar o agendamento: " + mensagemDeErro(err, "tente outro horário."));
         if (err.response?.status === 400 && data) {
           setHora("");
           setAtualizacaoHorarios((atual) => atual + 1);
@@ -120,7 +119,7 @@ export default function AgendarServico() {
       await api.post("/api/v1/schedule/waitlist/", { barber: barbeiro, service: servico, date: data });
       setMensagemEspera("Você entrou na lista de espera. Avisaremos quando surgir uma possibilidade.");
     } catch (error) {
-      setMensagemEspera(error.response?.data?.detail || "Não foi possível entrar na lista de espera.");
+      setMensagemEspera(mensagemDeErro(error, "Não foi possível entrar na lista de espera."));
     } finally {
       setEntrandoEspera(false);
     }

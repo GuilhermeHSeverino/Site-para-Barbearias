@@ -52,8 +52,6 @@ export default function BarberLayout({ children }) {
         navigate(rota);
     };
 
-    const linkAtual = LINKS.find(l => l.rota === location.pathname);
-
     return (
         <div className="barber-layout">
 
@@ -136,24 +134,6 @@ export default function BarberLayout({ children }) {
 
             {/* CONTEÚDO */}
             <main className="barber-conteudo">
-                {/* CABEÇALHO DINÂMICO - Agora alinhado com o conteúdo das páginas */}
-                {linkAtual && linkAtual.rota !== "/barbeiro/" && (
-                    <div style={{ width: '95%', maxWidth: '1400px', margin: '0 auto' }}>
-                        <div style={{
-                            padding: '24px 0',
-                            marginBottom: '24px',
-                            borderBottom: '1px solid #232323',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px'
-                        }}>
-                            <span style={{ fontSize: '24px' }}>{linkAtual.icone}</span>
-                            <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'white', margin: 0 }}>
-                                {linkAtual.nome}
-                            </h1>
-                        </div>
-                    </div>
-                )}
                 {children}
             </main>
 

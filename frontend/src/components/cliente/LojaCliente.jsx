@@ -6,6 +6,7 @@ import {
     listarProdutosDisponiveis,
 } from "../../services/cliente/lojaService";
 import "./clienteFlow.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 export default function LojaCliente() {
     const [produtos, setProdutos] = useState([]);
@@ -46,7 +47,7 @@ export default function LojaCliente() {
             });
             setMensagem("Pedido enviado. O estoque será atualizado quando o barbeiro confirmar a entrega.");
         } catch (error) {
-            setMensagem(error.response?.data?.detail || "Não foi possível concluir a compra.");
+            setMensagem(mensagemDeErro(error, "Não foi possível concluir a compra."));
         } finally {
             setComprando(null);
         }

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./estoque.css";
+import { mensagemDeErro } from "../../utils/mensagemErro";
+import MostrarMais from "../MostrarMais";
 
 const PAGAMENTOS = [
     { value: "dinheiro", label: "Dinheiro" },
@@ -16,6 +18,7 @@ export default function EstoqueBarbeiro() {
     const [movimentos, setMovimentos] = useState([]);
     const [pedidos, setPedidos] = useState([]);
     const [pagamentoPedido, setPagamentoPedido] = useState({});
+    const [pedidosVisiveis, setPedidosVisiveis] = useState(5);
     const [busca, setBusca] = useState("");
     const navigate = useNavigate();
 
@@ -54,7 +57,7 @@ export default function EstoqueBarbeiro() {
             setErro("");
         } catch (err) {
             console.error(err);
-            setErro("Não foi possível carregar os produtos do estoque.");
+            setErro(mensagemDeErro(err, "Não foi possível carregar os produtos do estoque."));
         } finally {
             setLoadingProdutos(false);
         }
@@ -88,7 +91,7 @@ export default function EstoqueBarbeiro() {
             await carregarProdutos();
             await carregarMovimentos();
         } catch (err) {
-            alert(err.response?.data?.detail || "Não foi possível confirmar a entrega.");
+            alert(mensagemDeErro(err, "Não foi possível confirmar a entrega."));
         }
     };
 
@@ -114,12 +117,7 @@ export default function EstoqueBarbeiro() {
             await carregarMovimentos();
         } catch (err) {
             console.error(err);
-            alert(
-                err.response?.data?.quantity?.[0] ||
-                err.response?.data?.custo_total?.[0] ||
-                err.response?.data?.detail ||
-                "Erro ao registrar movimentação."
-            );
+            alert(mensagemDeErro(err, "Erro ao registrar movimentação."));
         } finally {
             setEnviando(false);
         }
@@ -147,7 +145,7 @@ export default function EstoqueBarbeiro() {
             await carregarProdutos();
         } catch (err) {
             console.error(err);
-            alert(err.response?.data?.custo_total?.[0] || err.response?.data?.detail || "Não foi possível adicionar o produto.");
+            alert(mensagemDeErro(err, "Não foi possível adicionar o produto."));
         } finally {
             setAdicionandoProduto(false);
         }
@@ -201,7 +199,8 @@ export default function EstoqueBarbeiro() {
 
             {pedidos.length > 0 && <div className="movimento-card" style={{ marginBottom: "24px" }}>
                 <h2>Pedidos aguardando retirada</h2>
-                <div className="lista">{pedidos.map((pedido) => <div className="item" key={pedido.id}><div><strong>{pedido.product}</strong><p>{pedido.client} · Quantidade: {pedido.quantity}</p></div><div style={{ display: "flex", gap: "8px", alignItems: "center" }}><select aria-label="Forma de pagamento" value={pagamentoPedido[pedido.id] || "dinheiro"} onChange={(e) => setPagamentoPedido({ ...pagamentoPedido, [pedido.id]: e.target.value })}>{PAGAMENTOS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}</select><button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>Confirmar entrega</button></div></div>)}</div>
+                <div className="lista">{pedidos.slice(0, pedidosVisiveis).map((pedido) => <div className="pedido-item" key={pedido.id}><div><strong>{pedido.product}</strong><p>{pedido.client} · Quantidade: {pedido.quantity}</p></div><div className="pedido-acoes"><select className="pedido-pagamento" aria-label="Forma de pagamento" value={pagamentoPedido[pedido.id] || "dinheiro"} onChange={(e) => setPagamentoPedido({ ...pagamentoPedido, [pedido.id]: e.target.value })}>{PAGAMENTOS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}</select><button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>Confirmar entrega</button></div></div>)}</div>
+                <MostrarMais total={pedidos.length} visiveis={pedidosVisiveis} passo={5} onMostrar={setPedidosVisiveis} />
             </div>}
 
             {formProdutoAberto && <div className="movimento-card" style={{ marginBottom: "24px" }}>

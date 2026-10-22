@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
+import { mensagemDeErro } from "../../utils/mensagemErro";
 
 /**
  * Componente para Gestão de Clientes do Barbeiro (CRM).
@@ -51,7 +52,7 @@ function ClientesBarbeiro() {
             setClientes(resClients.data);
         } catch (err) {
             console.error("Erro ao carregar clientes:", err);
-            alert("Erro ao carregar a lista de clientes.");
+            alert(mensagemDeErro(err, "Não foi possível carregar a lista de clientes."));
         } finally {
             setLoading(false);
         }
@@ -92,6 +93,7 @@ function ClientesBarbeiro() {
                     }}
                 >
                     <button
+                        className="btn-voltar"
                         onClick={() => navigate("/barbeiro/")}
                         style={{
                             background: "none",
