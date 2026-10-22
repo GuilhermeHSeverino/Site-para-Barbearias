@@ -317,3 +317,77 @@ h1 {
     cursor: not-allowed;
 }
 
+
+/* botão que abre o cadastro de produto */
+.estoque-acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-novo-produto {
+    background: #22c55e;
+    color: #0d0d0d;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn-novo-produto:hover {
+    filter: brightness(1.1);
+}
+
+/* lista de produtos ocupa a largura toda quando a movimentação está fechada */
+.painel-principal.sem-lateral {
+    grid-template-columns: 1fr;
+}
+
+.item.com-acao {
+    grid-template-columns: 1fr 90px 80px 120px;
+}
+
+.btn-movimentar,
+.btn-ver-mais {
+    background: none;
+    border: 1px solid #2d2d2d;
+    color: #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-movimentar:hover,
+.btn-ver-mais:hover {
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+.btn-ver-mais {
+    width: 100%;
+    margin-top: 14px;
+}
+
+.movimento-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-fechar {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .item.com-acao {
+        grid-template-columns: 1fr;
+    }
+}

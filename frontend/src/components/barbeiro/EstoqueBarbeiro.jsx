@@ -24,6 +24,9 @@ export default function EstoqueBarbeiro() {
     const [erro, setErro] = useState("");
     const [enviando, setEnviando] = useState(false);
     const [adicionandoProduto, setAdicionandoProduto] = useState(false);
+    const [formProdutoAberto, setFormProdutoAberto] = useState(false);
+    const [movimentoAberto, setMovimentoAberto] = useState(false);
+    const [historicoCompleto, setHistoricoCompleto] = useState(false);
     const [novoProduto, setNovoProduto] = useState({ name: "", description: "", price: "", custo: "", estoque_minimo: 5, quantity: 0, disponivel_na_loja: false });
 
     const [movimento, setMovimento] = useState({
@@ -105,6 +108,7 @@ export default function EstoqueBarbeiro() {
                 description: "",
                 custo: ""
             });
+            setMovimentoAberto(false);
 
             await carregarProdutos();
             await carregarMovimentos();
@@ -139,6 +143,7 @@ export default function EstoqueBarbeiro() {
                 ...(novoProduto.custo ? { custo_total: novoProduto.custo } : {}),
             }, config);
             setNovoProduto({ name: "", description: "", price: "", custo: "", estoque_minimo: 5, quantity: 0, disponivel_na_loja: false });
+            setFormProdutoAberto(false);
             await carregarProdutos();
         } catch (err) {
             console.error(err);
@@ -178,13 +183,18 @@ export default function EstoqueBarbeiro() {
                     </div>
                 </div>
 
-                <input
-                    type="text"
-                    className="busca-input"
-                    placeholder="Buscar produto..."
-                    value={busca}
-                    onChange={(e) => setBusca(e.target.value)}
-                />
+                <div className="estoque-acoes">
+                    <input
+                        type="text"
+                        className="busca-input"
+                        placeholder="Buscar produto..."
+                        value={busca}
+                        onChange={(e) => setBusca(e.target.value)}
+                    />
+                    <button className="btn-novo-produto" onClick={() => setFormProdutoAberto(!formProdutoAberto)}>
+                        {formProdutoAberto ? "Fechar" : "+ Adicionar produto ao estoque"}
+                    </button>
+                </div>
             </div>
 
             {erro && <div className="erro-msg">{erro}</div>}
@@ -194,18 +204,18 @@ export default function EstoqueBarbeiro() {
                 <div className="lista">{pedidos.map((pedido) => <div className="item" key={pedido.id}><div><strong>{pedido.product}</strong><p>{pedido.client} · Quantidade: {pedido.quantity}</p></div><div style={{ display: "flex", gap: "8px", alignItems: "center" }}><select aria-label="Forma de pagamento" value={pagamentoPedido[pedido.id] || "dinheiro"} onChange={(e) => setPagamentoPedido({ ...pagamentoPedido, [pedido.id]: e.target.value })}>{PAGAMENTOS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}</select><button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>Confirmar entrega</button></div></div>)}</div>
             </div>}
 
-            <div className="movimento-card" style={{ marginBottom: "24px" }}>
-                <h2>Adicionar item à loja</h2>
+            {formProdutoAberto && <div className="movimento-card" style={{ marginBottom: "24px" }}>
+                <h2>Novo produto no estoque</h2>
                 <div className="movimento-form" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
                     <div className="campo-grupo"><label>Nome</label><input value={novoProduto.name} onChange={(e) => setNovoProduto({ ...novoProduto, name: e.target.value })} placeholder="Ex: Pomada modeladora" /></div>
                     <div className="campo-grupo"><label>Descrição</label><input value={novoProduto.description} onChange={(e) => setNovoProduto({ ...novoProduto, description: e.target.value })} placeholder="Descrição do produto" /></div>
                     <div className="campo-grupo"><label>Preço de venda (R$)</label><input type="number" min="0" step="0.01" value={novoProduto.price} onChange={(e) => setNovoProduto({ ...novoProduto, price: e.target.value })} /></div>
                     <div className="campo-grupo"><label>Quantidade inicial</label><input type="number" min="0" value={novoProduto.quantity} onChange={(e) => setNovoProduto({ ...novoProduto, quantity: e.target.value })} /></div>
                     <div className="campo-grupo"><label>Custo da compra (R$, opcional)</label><input type="number" min="0" step="0.01" placeholder="Total pago ao fornecedor" value={novoProduto.custo} onChange={(e) => setNovoProduto({ ...novoProduto, custo: e.target.value })} /></div>
-                    <label className="campo-grupo" style={{ flexDirection: "row", alignItems: "center", gap: "8px" }}><input type="checkbox" checked={novoProduto.disponivel_na_loja} onChange={(e) => setNovoProduto({ ...novoProduto, disponivel_na_loja: e.target.checked })} /> Disponível na loja</label>
-                    <button className="btn-confirmar-mov" onClick={adicionarProduto} disabled={adicionandoProduto}>{adicionandoProduto ? "Adicionando..." : "Adicionar produto"}</button>
+                    <label className="campo-grupo" style={{ flexDirection: "row", alignItems: "center", gap: "8px" }}><input type="checkbox" checked={novoProduto.disponivel_na_loja} onChange={(e) => setNovoProduto({ ...novoProduto, disponivel_na_loja: e.target.checked })} /> Vender também na loja virtual</label>
+                    <button className="btn-confirmar-mov" onClick={adicionarProduto} disabled={adicionandoProduto}>{adicionandoProduto ? "Salvando..." : "Salvar produto"}</button>
                 </div>
-            </div>
+            </div>}
 
             {/* CARDS */}
             <div className="cards-dashboard">
@@ -233,7 +243,7 @@ export default function EstoqueBarbeiro() {
             </div>
 
             {/* PAINEL PRINCIPAL: PRODUTOS + MOVIMENTAÇÃO */}
-            <div className="painel-principal">
+            <div className={`painel-principal ${movimentoAberto ? "" : "sem-lateral"}`}>
 
                 {/* PRODUTOS */}
                 <div className="produtos-card">
@@ -248,7 +258,7 @@ export default function EstoqueBarbeiro() {
                     ) : (
                         <div className="lista">
                             {produtosFiltrados.map((p) => (
-                                <div key={p.id} className="item">
+                                <div key={p.id} className="item com-acao">
                                     <div>
                                         <strong>{p.product_name}</strong>
                                         <p>R$ {parseFloat(p.product_price || 0).toFixed(2)}</p>
@@ -265,6 +275,18 @@ export default function EstoqueBarbeiro() {
                                             <span className="status green">OK</span>
                                         )}
                                     </div>
+
+                                    <div>
+                                        <button
+                                            className="btn-movimentar"
+                                            onClick={() => {
+                                                setMovimento({ ...movimento, product: p.product });
+                                                setMovimentoAberto(true);
+                                            }}
+                                        >
+                                            Movimentar
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -272,8 +294,11 @@ export default function EstoqueBarbeiro() {
                 </div>
 
                 {/* NOVA MOVIMENTAÇÃO */}
-                <div className="movimento-card">
-                    <h2>Nova movimentação</h2>
+                {movimentoAberto && <div className="movimento-card">
+                    <div className="movimento-topo">
+                        <h2>Nova movimentação</h2>
+                        <button className="btn-fechar" onClick={() => setMovimentoAberto(false)}>✕</button>
+                    </div>
 
                     <div className="movimento-form">
                         <div className="campo-grupo">
@@ -350,7 +375,7 @@ export default function EstoqueBarbeiro() {
                             {enviando ? "Enviando..." : "Confirmar movimentação"}
                         </button>
                     </div>
-                </div>
+                </div>}
 
             </div>
 
@@ -364,7 +389,7 @@ export default function EstoqueBarbeiro() {
                     <p className="estado-msg">Nenhuma movimentação registrada ainda.</p>
                 ) : (
                     <div className="lista">
-                        {movimentos.map((m) => (
+                        {(historicoCompleto ? movimentos : movimentos.slice(0, 8)).map((m) => (
                             <div key={m.id} className="item">
                                 <div>
                                     <strong>{m.product_name}</strong>
@@ -383,6 +408,12 @@ export default function EstoqueBarbeiro() {
                             </div>
                         ))}
                     </div>
+                )}
+
+                {movimentos.length > 8 && (
+                    <button className="btn-ver-mais" onClick={() => setHistoricoCompleto(!historicoCompleto)}>
+                        {historicoCompleto ? "Mostrar só as mais recentes" : `Ver histórico completo (${movimentos.length})`}
+                    </button>
                 )}
             </div>
 
