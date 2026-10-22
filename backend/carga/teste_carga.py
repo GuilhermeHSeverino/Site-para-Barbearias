@@ -123,7 +123,7 @@ def acao_aleatoria(base, tokens, servicos_por_barbeiro, hoje):
     return "Pedidos pendentes da loja", "GET", "/stores/pending/", token_barbeiro, None
 
 
-def rodar_nivel(qtd_usuarios, duracao, pausa, base, tokens):
+def rodar_nivel(qtd_usuarios, duracao, pausa, rampa, base, tokens):
     from django.utils import timezone
     hoje = timezone.localdate()
     servicos_por_barbeiro = {}
@@ -131,10 +131,13 @@ def rodar_nivel(qtd_usuarios, duracao, pausa, base, tokens):
         servicos_por_barbeiro.setdefault(s.barber_id, []).append(s.id)
 
     resultados, trava = [], threading.Lock()
-    fim = time.perf_counter() + duracao
+    # os usuários entram aos poucos ao longo da rampa (como acontece no uso real),
+    # em vez de todos fazerem a primeira requisição no mesmo instante
+    fim = time.perf_counter() + rampa + duracao
 
     def usuario_virtual():
         locais = []
+        time.sleep(random.uniform(0, rampa))
         while time.perf_counter() < fim:
             nome, metodo, caminho, token, corpo = acao_aleatoria(base, tokens, servicos_por_barbeiro, hoje)
             ms, status = requisicao(metodo, caminho, token, corpo)
@@ -186,6 +189,7 @@ def main():
     parser.add_argument("--duracao", type=int, default=20, help="segundos por nível de carga")
     parser.add_argument("--threads", type=int, default=8, help="threads do servidor")
     parser.add_argument("--pausa", type=float, default=0, help="segundos, em média, entre as ações de cada usuário (0 = sem pausa)")
+    parser.add_argument("--rampa", type=float, default=10, help="segundos em que os usuários vão entrando, antes da duração do nível")
     args = parser.parse_args()
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as pasta:
@@ -200,8 +204,8 @@ def main():
             resumos = []
             for qtd in args.usuarios:
                 tokens = gerar_tokens(base)  # tokens novos a cada nível (expiram em 5 minutos)
-                print(f"\nSimulando {qtd} usuários simultâneos por {args.duracao} s...")
-                resultados, tempo_total = rodar_nivel(qtd, args.duracao, args.pausa, base, tokens)
+                print(f"\nSimulando {qtd} usuários simultâneos ({args.rampa:g} s de entrada + {args.duracao} s)...")
+                resultados, tempo_total = rodar_nivel(qtd, args.duracao, args.pausa, args.rampa, base, tokens)
                 resumo = resumir(qtd, resultados, tempo_total)
                 resumos.append(resumo)
                 for rota, p95 in resumo["por_rota"].items():
@@ -220,6 +224,7 @@ def main():
         print(f"{r['usuarios']:>9} {r['requisicoes']:>12} {r['vazao']:>7.1f} {r['media']:>7.1f}ms "
               f"{r['p95']:>7.1f}ms {r['maximo']:>7.1f}ms {r['taxa_erros']:>6.2f}%")
     cenario = f"pausa média de {args.pausa:g} s entre ações" if args.pausa else "sem pausa entre ações (estresse)"
+    cenario += f"; usuários entrando ao longo de {args.rampa:g} s"
     print(f"\nCenário: {cenario}. Limite do RNF01: {LIMITE_MS} ms. Ambiente: {sys.platform}, Python {sys.version.split()[0]}, SQLite, servidor waitress com {args.threads} threads.")
 
 
