@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import { mensagemDeErro } from "../../utils/mensagemErro";
+import { avisarNotificacoesAtualizadas } from "../../hooks/useNotificacoesAoVivo";
 
 const ICONES = { STOCK_LOW: "📦", REMINDER: "⏰", REVIEW: "⭐" };
 
@@ -40,6 +41,7 @@ export default function NotificacoesBarbeiro() {
             setNotificacoes((atuais) => atuais.map((notificacao) => (
                 notificacao.id === id ? { ...notificacao, is_read: true } : notificacao
             )));
+            avisarNotificacoesAtualizadas();
         } catch (error) {
             console.error("Erro ao marcar notificação:", error);
         }

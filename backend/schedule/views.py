@@ -76,7 +76,8 @@ class ScheduleClientCancelView(APIView):
             return Response({"detail": "Este agendamento não pode mais ser cancelado."}, status=400)
         schedule.status = "cancelado"
         schedule.save(update_fields=["status"])
-        from notifications.services import notify_barber, notify_client
+        from notifications.services import notify_barber, notify_client, remover_lembretes
+        remover_lembretes(schedule)
         notify_barber(
             schedule.barber,
             f"Agendamento cancelado pelo cliente {client.name}: {schedule.date.strftime('%d/%m/%Y')} às {schedule.start_time.strftime('%H:%M')}.",

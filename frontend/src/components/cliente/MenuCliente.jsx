@@ -79,7 +79,7 @@ function MenuCliente() {
       </section>
 
       {textoLembrete && <Link to="/cliente/historico" className="cliente-lembrete"><span>⏰</span><strong>{textoLembrete}</strong><small>Confira os detalhes do seu agendamento e avise a barbearia se precisar cancelar.</small><b>Ver agendamento →</b></Link>}
-      {notificacoes.length > 0 && <Link to="/cliente/historico" className="cliente-lembrete cliente-notificacao-interna"><span>🔔</span><strong>{notificacoes[0].message}</strong><small>Você tem {notificacoes.length} aviso(s) novo(s).</small><b>Ver avisos →</b></Link>}
+      {notificacoes.length > 0 && <Link to="/cliente/notificacoes" className="cliente-lembrete cliente-notificacao-interna"><span>🔔</span><strong>{notificacoes[0].message}</strong><small>Você tem {notificacoes.length} aviso(s) novo(s).</small><b>Ver avisos →</b></Link>}
       {!notificacoesPermitidas && typeof Notification !== "undefined" && Notification.permission !== "denied" && <button className="cliente-notificacao-botao" onClick={ativarNotificacoes}>Ativar lembretes neste navegador</button>}
 
       <section className="cliente-resumo">

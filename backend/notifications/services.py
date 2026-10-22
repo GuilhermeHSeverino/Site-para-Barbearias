@@ -71,6 +71,12 @@ def gerar_lembretes_cliente(client):
         )
 
 
+def remover_lembretes(schedule):
+    """Apaga os lembretes de um atendimento cancelado, para não avisar de um horário que não existe mais."""
+    schedule.lembretes_cliente.all().delete()
+    schedule.lembretes_barbeiro.all().delete()
+
+
 def avisar_estoque_baixo(barber, stock):
     """Avisa o barbeiro quando o produto chega ao estoque mínimo (sem repetir aviso não lido)."""
     if barber is None or stock.quantity > stock.product.estoque_minimo:

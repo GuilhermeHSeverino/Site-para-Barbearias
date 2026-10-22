@@ -72,3 +72,15 @@ class ClientNotificationReadView(APIView):
         if not updated:
             return Response({"detail": "Notificação não encontrada."}, status=404)
         return Response({"status": "read"})
+
+
+class ClientNotificationReadAllView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from client.models import Client
+        client = Client.objects.filter(user=request.user).first()
+        if not client:
+            return Response({"detail": "Apenas clientes podem atualizar notificações."}, status=403)
+        total = ClientNotification.objects.filter(client=client, is_read=False).update(is_read=True)
+        return Response({"marcadas": total})

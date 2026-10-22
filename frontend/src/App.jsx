@@ -22,6 +22,7 @@ import ConfiguracoesBarbeiro from './components/barbeiro/ConfiguracoesBarbeiro';
 import ClienteLayout from './components/cliente/ClienteLayout';
 import LojaCliente from './components/cliente/LojaCliente';
 import PedidosLojaCliente from './components/cliente/PedidosLojaCliente';
+import NotificacoesCliente from './components/cliente/NotificacoesCliente';
 import BarberLayout from './components/barbeiro/BarberLayout';
 
 
@@ -43,6 +44,7 @@ function App() {
             <Route path="/cliente/historico" element={<ClienteLayout><MeusAgendamentos /></ClienteLayout>} />
             <Route path="/cliente/loja" element={<ClienteLayout><LojaCliente /></ClienteLayout>} />
             <Route path="/cliente/pedidos" element={<ClienteLayout><PedidosLojaCliente /></ClienteLayout>} />
+            <Route path="/cliente/notificacoes" element={<ClienteLayout><NotificacoesCliente /></ClienteLayout>} />
           </Route>
 
           <Route element={<ProtectedRoute perfil="barbeiro" />}>

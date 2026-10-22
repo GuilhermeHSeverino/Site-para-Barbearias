@@ -5,6 +5,12 @@ import { notificarNavegador } from "../utils/notificarNavegador";
 const INTERVALO_MS = 30000;
 // na primeira consulta, só avisa o que chegou há pouco (o restante já era conhecido)
 const RECENTE_MS = 2 * 60 * 1000;
+const EVENTO_ATUALIZADAS = "notificacoes-atualizadas";
+
+// Chamado pelas telas que marcam notificações como lidas, para o contador do sino atualizar na hora.
+export function avisarNotificacoesAtualizadas() {
+    window.dispatchEvent(new Event(EVENTO_ATUALIZADAS));
+}
 
 // Consulta as notificações periodicamente e informa o total não lido e a mais recente que chegou.
 export default function useNotificacoesAoVivo(endpoint) {
@@ -43,9 +49,11 @@ export default function useNotificacoesAoVivo(endpoint) {
 
         verificar();
         const intervalo = window.setInterval(verificar, INTERVALO_MS);
+        window.addEventListener(EVENTO_ATUALIZADAS, verificar);
         return () => {
             ativo = false;
             window.clearInterval(intervalo);
+            window.removeEventListener(EVENTO_ATUALIZADAS, verificar);
         };
     }, [endpoint]);
 

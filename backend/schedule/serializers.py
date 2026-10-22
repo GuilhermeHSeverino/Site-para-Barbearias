@@ -175,6 +175,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
                     f"Seu atendimento com {instance.barber.name} foi concluído. Avalie sua experiência.",
                 )
 
+        if instance.status == "cancelado" and old_status != "cancelado":
+            from notifications.services import remover_lembretes
+            remover_lembretes(instance)
+
         if instance.status == "cancelado" and old_status != "cancelado" and instance.client_name:
             from notifications.services import notify_client
             notify_client(

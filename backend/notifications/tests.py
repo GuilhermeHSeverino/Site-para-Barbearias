@@ -42,6 +42,23 @@ class LembretesTests(APITestCase):
         self.assertEqual(len(resposta.data), 1)
         self.assertIn(self.barbeiro.name, resposta.data[0]["message"])
 
+    def test_cancelar_atendimento_apaga_os_lembretes(self):
+        agendamento = self.agendar_daqui_a(5)
+        self.lembretes_do_barbeiro()
+        self.client.force_authenticate(self.cliente.user)
+        self.client.get("/api/v1/client-notifications/")
+        self.client.patch(f"/api/v1/schedule/{agendamento.id}/cancel/")
+        self.assertFalse(ClientNotification.objects.filter(schedule=agendamento).exists())
+        self.assertFalse(Notification.objects.filter(schedule=agendamento).exists())
+
+    def test_cliente_marca_todas_como_lidas(self):
+        self.agendar_daqui_a(120)
+        self.client.force_authenticate(self.cliente.user)
+        self.client.get("/api/v1/client-notifications/")
+        self.client.post("/api/v1/client-notifications/read-all/")
+        resposta = self.client.get("/api/v1/client-notifications/")
+        self.assertTrue(all(item["is_read"] for item in resposta.data))
+
     def test_cliente_nao_acessa_notificacoes_do_barbeiro(self):
         self.client.force_authenticate(self.cliente.user)
         self.assertEqual(self.client.get("/api/v1/notifications/").status_code, 403)

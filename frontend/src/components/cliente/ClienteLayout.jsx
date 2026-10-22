@@ -14,6 +14,7 @@ const LINKS = [
     { nome: "Loja", icone: "◇", rota: "/cliente/loja" },
     { nome: "Meus pedidos", icone: "▣", rota: "/cliente/pedidos" },
     { nome: "Avaliar", icone: "★", rota: "/cliente/feedback" },
+    { nome: "Notificações", icone: "◉", rota: "/cliente/notificacoes" },
 ];
 
 export default function ClienteLayout({ children }) {
@@ -46,7 +47,7 @@ export default function ClienteLayout({ children }) {
             <div className="cliente-topbar">
                 <button className="cliente-menu-botao" onClick={() => setMenuAberto(true)} aria-label="Abrir menu">☰</button>
                 <span className="cliente-logo">💈 Barbearia</span>
-                <IconeNotificacoes naoLidas={naoLidas} onClick={() => irPara("/cliente")} />
+                <IconeNotificacoes naoLidas={naoLidas} onClick={() => { fecharAviso(); irPara("/cliente/notificacoes"); }} />
             </div>
 
             {menuAberto && <div className="cliente-backdrop" onClick={() => setMenuAberto(false)} />}
@@ -66,7 +67,7 @@ export default function ClienteLayout({ children }) {
                         >
                             <span>{link.icone}</span>
                             {link.nome}
-                            {link.rota === "/cliente" && <ContadorMenu naoLidas={naoLidas} />}
+                            {link.rota === "/cliente/notificacoes" && <ContadorMenu naoLidas={naoLidas} />}
                         </button>
                     ))}
                 </nav>
@@ -84,7 +85,7 @@ export default function ClienteLayout({ children }) {
                 </div>
             </aside>
 
-            <AvisoNotificacao aviso={aviso} onFechar={fecharAviso} onAbrir={() => { fecharAviso(); navigate("/cliente"); }} />
+            <AvisoNotificacao aviso={aviso} onFechar={fecharAviso} onAbrir={() => { fecharAviso(); navigate("/cliente/notificacoes"); }} />
 
             <main className="cliente-conteudo">
                 {location.pathname !== "/cliente" && (

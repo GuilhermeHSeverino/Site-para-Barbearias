@@ -5,6 +5,7 @@ import api from "../../api";
 import "./clienteFlow.css";
 import { mensagemDeErro } from "../../utils/mensagemErro";
 import MostrarMais from "../MostrarMais";
+import { avisarNotificacoesAtualizadas } from "../../hooks/useNotificacoesAoVivo";
 
 // próximos horários primeiro (do mais perto ao mais distante), depois os passados (do mais recente ao mais antigo)
 function ordenarAgendamentos(lista) {
@@ -80,6 +81,7 @@ function MeusAgendamentos() {
     try {
       await api.patch(`/api/v1/schedule/${id}/cancel/`);
       setAgendamentos((atuais) => atuais.map((item) => item.id === id ? { ...item, status: "cancelado" } : item));
+      avisarNotificacoesAtualizadas(); // o lembrete desse horário é apagado no servidor
     } catch (error) {
       window.alert(mensagemDeErro(error, "Não foi possível cancelar o horário."));
     } finally {
