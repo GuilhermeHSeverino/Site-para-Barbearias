@@ -35,6 +35,16 @@ class AvaliacaoTests(APITestCase):
         self.assertEqual(avaliacao.schedule, atendimento)
         self.assertTrue(Notification.objects.filter(barber=self.barbeiro, type="REVIEW").exists())
 
+    def test_barbeiro_nao_identifica_quem_avaliou(self):
+        self.concluir_atendimento()
+        self.avaliar(self.cliente)
+        self.client.force_authenticate(self.barbeiro.user)
+        avaliacao = self.client.get("/api/v1/reviews/").data[0]
+        self.assertNotIn("client", avaliacao)
+        self.assertNotIn("schedule", avaliacao)
+        aviso = Notification.objects.get(barber=self.barbeiro, type="REVIEW")
+        self.assertNotIn(self.cliente.name, aviso.message)
+
     def test_cada_atendimento_so_pode_ser_avaliado_uma_vez(self):
         self.concluir_atendimento()
         self.avaliar(self.cliente)

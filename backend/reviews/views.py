@@ -6,13 +6,14 @@ from rest_framework.permissions import IsAuthenticated
 
 class ReviewCreateListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated,]
-    queryset = Review.objects.all()
+    queryset = Review.objects.select_related("client")
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
         review = serializer.save()
         from notifications.services import notify_barber
-        notify_barber(review.barber, f"Nova avaliação de {review.client.name}: nota {review.rating}/10.", "REVIEW")
+        # a avaliação é anônima: o aviso ao barbeiro não identifica o cliente
+        notify_barber(review.barber, f"Nova avaliação recebida: nota {review.rating}/10.", "REVIEW")
 
 class ReviewRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated,]

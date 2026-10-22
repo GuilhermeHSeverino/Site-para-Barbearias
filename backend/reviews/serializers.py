@@ -9,6 +9,16 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("client", "schedule")
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # a avaliação é anônima: só o próprio autor vê a qual cliente e atendimento ela está vinculada
+        request = self.context.get("request")
+        autor = request is not None and instance.client is not None and instance.client.user_id == request.user.id
+        if not autor:
+            data.pop("client", None)
+            data.pop("schedule", None)
+        return data
+
     def validate(self, attrs):
         if self.instance is not None:
             # na edição, o barbeiro avaliado não pode ser trocado
