@@ -1,11 +1,20 @@
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import BasePermission, IsAdminUser
 from django.db.models import Sum
 from django.utils.timezone import now
 from datetime import timedelta
 from .models import Finances
 from .serializers import FinancesSerializer
+from barber.models import Barber
+
+
+class IsBarberOrAdmin(BasePermission):
+    """Barbeiros e administradores podem consultar o financeiro da barbearia."""
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and (
+            request.user.is_staff or Barber.objects.filter(user=request.user).exists()
+        ))
 
 
 # 🔥 FILTRO DE PERÍODO
@@ -30,7 +39,7 @@ def filtrar_periodo(queryset, periodo):
 
 # 🔥 LISTAR / CRIAR
 class FinancesListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsBarberOrAdmin]
     serializer_class = FinancesSerializer
 
     def get_queryset(self):
@@ -49,7 +58,7 @@ class FinancesRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 # 🔥 RELATÓRIO (CORRIGIDO)
 class FinanceReportAPIView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsBarberOrAdmin]
 
     def get(self, request, year, month):
         entradas = Finances.objects.filter(
@@ -73,7 +82,7 @@ class FinanceReportAPIView(generics.GenericAPIView):
         })
 
 class FinanceSummaryAPIView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsBarberOrAdmin]
 
     def get(self, request):
         periodo = request.query_params.get('periodo', 'mensal')
@@ -92,7 +101,7 @@ class FinanceSummaryAPIView(generics.GenericAPIView):
 
 # 🔥 SALDO ACUMULADO (PERFEITO PRO FRONT)
 class FinanceSaldoAPIView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsBarberOrAdmin]
 
     def get(self, request):
         periodo = request.query_params.get('periodo', 'mensal')

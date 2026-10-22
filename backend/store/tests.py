@@ -51,6 +51,14 @@ class LojaTests(APITestCase):
         self.assertEqual(str(receita.valor), "60.00")
         self.assertEqual(receita.payment_method, "cartao_debito")
 
+        # o barbeiro (sem ser administrador) vê o lançamento no painel financeiro; o cliente não
+        self.client.force_authenticate(self.barbeiro.user)
+        painel = self.client.get("/api/v1/finance/", {"periodo": "diario"})
+        self.assertEqual(painel.status_code, 200)
+        self.assertEqual(len(painel.data), 1)
+        self.client.force_authenticate(self.cliente.user)
+        self.assertEqual(self.client.get("/api/v1/finance/").status_code, 403)
+
     def test_recusa_forma_de_pagamento_invalida(self):
         self.reservar(self.cliente, 1)
         pedido = Store.objects.get()
