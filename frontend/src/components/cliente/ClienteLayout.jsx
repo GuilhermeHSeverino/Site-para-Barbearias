@@ -5,6 +5,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import "./clienteLayout.css";
 import useNotificacoesAoVivo from "../../hooks/useNotificacoesAoVivo";
 import AvisoNotificacao, { BotaoAtivarAvisos } from "../AvisoNotificacao";
+import IconeNotificacoes, { ContadorMenu } from "../IconeNotificacoes";
 
 const LINKS = [
     { nome: "Início", icone: "⌂", rota: "/cliente" },
@@ -19,7 +20,7 @@ export default function ClienteLayout({ children }) {
     const [menuAberto, setMenuAberto] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/client-notifications/");
+    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/client-notifications/");
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
 
@@ -45,6 +46,7 @@ export default function ClienteLayout({ children }) {
             <div className="cliente-topbar">
                 <button className="cliente-menu-botao" onClick={() => setMenuAberto(true)} aria-label="Abrir menu">☰</button>
                 <span className="cliente-logo">💈 Barbearia</span>
+                <IconeNotificacoes naoLidas={naoLidas} onClick={() => irPara("/cliente")} />
             </div>
 
             {menuAberto && <div className="cliente-backdrop" onClick={() => setMenuAberto(false)} />}
@@ -64,6 +66,7 @@ export default function ClienteLayout({ children }) {
                         >
                             <span>{link.icone}</span>
                             {link.nome}
+                            {link.rota === "/cliente" && <ContadorMenu naoLidas={naoLidas} />}
                         </button>
                     ))}
                 </nav>

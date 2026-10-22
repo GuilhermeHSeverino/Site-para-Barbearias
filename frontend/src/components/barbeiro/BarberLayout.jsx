@@ -5,6 +5,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import useNotificacoesAoVivo from "../../hooks/useNotificacoesAoVivo";
 import AvisoNotificacao, { BotaoAtivarAvisos } from "../AvisoNotificacao";
+import IconeNotificacoes, { ContadorMenu } from "../IconeNotificacoes";
 import "./barberLayout.css";
 
 const LINKS = [
@@ -25,7 +26,7 @@ export default function BarberLayout({ children }) {
     const [perfil, setPerfil] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
-    const { aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/notifications/");
+    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/notifications/");
 
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
@@ -65,6 +66,7 @@ export default function BarberLayout({ children }) {
                     ☰
                 </button>
                 <span className="topbar-logo">💈 Barbearia</span>
+                <IconeNotificacoes naoLidas={naoLidas} onClick={() => navigate("/barbeiro/notificacoes")} />
             </div>
 
             {/* BACKDROP (mobile, quando o menu está aberto) */}
@@ -96,6 +98,7 @@ export default function BarberLayout({ children }) {
                             >
                                 <span className="sidebar-icone">{link.icone}</span>
                                 {link.nome}
+                                {link.rota === "/barbeiro/notificacoes" && <ContadorMenu naoLidas={naoLidas} />}
                             </button>
                         );
                     })}
