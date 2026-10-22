@@ -36,6 +36,7 @@ class Finances(models.Model):
     date = models.DateField()
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, null=True, blank=True)
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, null=True, blank=True)
+    descricao = models.CharField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.tipo == self.ENTRADA and self.schedule:

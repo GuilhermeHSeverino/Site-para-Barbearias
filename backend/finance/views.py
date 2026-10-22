@@ -124,7 +124,10 @@ class FinanceSaldoAPIView(generics.GenericAPIView):
             # 🔥 DESCRIÇÃO DINÂMICA (PROFISSIONAL)
             descricao = ""
 
-            if f.schedule and f.schedule.service:
+            if f.descricao:
+                descricao = f.descricao
+
+            elif f.schedule and f.schedule.service:
                 descricao = f.schedule.service.name
 
             elif f.store:

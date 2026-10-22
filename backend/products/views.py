@@ -17,6 +17,12 @@ class ProductCreateListView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_permissions(self):
+        # cadastrar produto é tarefa de barbeiro ou administrador, não de cliente
+        if self.request.method == "POST":
+            return [IsBarberOrAdmin()]
+        return super().get_permissions()
+
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser,]
     queryset = Product.objects.all()
