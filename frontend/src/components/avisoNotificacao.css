@@ -1,0 +1,64 @@
+.aviso-notificacao {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    max-width: min(380px, calc(100vw - 40px));
+    padding: 14px 16px;
+    background: #171717;
+    border: 1px solid #22c55e;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    animation: aviso-entrar 0.2s ease-out;
+}
+
+.aviso-notificacao-texto {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #e5e7eb;
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+}
+
+.aviso-notificacao-fechar {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.botao-ativar-avisos {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px dashed rgba(34, 197, 94, 0.5);
+    border-radius: 8px;
+    color: #22c55e;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.contador-notificacoes {
+    margin-left: auto;
+    min-width: 20px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+}
+
+@keyframes aviso-entrar {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

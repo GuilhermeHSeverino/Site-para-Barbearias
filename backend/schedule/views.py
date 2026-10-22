@@ -206,10 +206,18 @@ class VacationListCreateView(APIView):
 
         vacation = Vacation.objects.create(barber=barber, start_date=start_date, end_date=end_date)
         # agendamentos já marcados no período não são cancelados automaticamente; o barbeiro é avisado
-        agendamentos = Schedule.objects.filter(
+        afetados = Schedule.objects.filter(
             barber=barber, date__range=(start_date, end_date), status__in=["agendado", "confirmado"]
-        ).count()
-        return Response({**self.serializar(vacation), "agendamentos_no_periodo": agendamentos}, status=201)
+        ).select_related("client_name")
+        from notifications.services import notify_client
+        for s in afetados:
+            if s.client_name:
+                notify_client(
+                    s.client_name,
+                    f"{barber.name} não atenderá em {s.date.strftime('%d/%m/%Y')}. Seu horário das {s.start_time.strftime('%H:%M')} "
+                    f"precisa ser remarcado: cancele-o em Agendamentos e escolha uma nova data.",
+                )
+        return Response({**self.serializar(vacation), "agendamentos_no_periodo": len(afetados)}, status=201)
 
 
 class VacationDeleteView(APIView):
@@ -242,6 +250,9 @@ class WaitlistCreateView(APIView):
             return Response({"detail": "Não é possível entrar na lista de espera para uma data passada."}, status=400)
 
         entry, created = WaitlistEntry.objects.get_or_create(client=client, barber=barber, service=service, date=date_value)
+        if created:
+            from notifications.services import notify_barber
+            notify_barber(barber, f"{client.name} entrou na lista de espera para {service.name} em {date_value.strftime('%d/%m/%Y')}.")
         return Response({"id": entry.id, "status": entry.status}, status=201 if created else 200)
 
 

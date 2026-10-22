@@ -43,6 +43,9 @@ class StockMovementSerializer(serializers.ModelSerializer):
         barbeiro = Barber.objects.filter(user=request.user).first() if request else None
         with transaction.atomic():
             movimento = super().create(validated_data)
+            if movimento.type == "saida":
+                from notifications.services import avisar_estoque_baixo
+                avisar_estoque_baixo(barbeiro, Stock.objects.select_related("product").get(product=movimento.product))
             if custo_total:
                 registrar_compra_de_produto(movimento.product, movimento.quantity, custo_total, barbeiro)
         return movimento

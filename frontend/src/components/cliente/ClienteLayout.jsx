@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import "./clienteLayout.css";
+import useNotificacoesAoVivo from "../../hooks/useNotificacoesAoVivo";
+import AvisoNotificacao, { BotaoAtivarAvisos } from "../AvisoNotificacao";
 
 const LINKS = [
     { nome: "Início", icone: "⌂", rota: "/cliente" },
@@ -17,6 +19,7 @@ export default function ClienteLayout({ children }) {
     const [menuAberto, setMenuAberto] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/client-notifications/");
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
 
@@ -61,11 +64,15 @@ export default function ClienteLayout({ children }) {
                         >
                             <span>{link.icone}</span>
                             {link.nome}
+                            {link.rota === "/cliente" && naoLidas > 0 && (
+                                <span className="contador-notificacoes" title="Notificações não lidas">{naoLidas}</span>
+                            )}
                         </button>
                     ))}
                 </nav>
 
                 <div className="cliente-sidebar-rodape">
+                    <BotaoAtivarAvisos permissao={permissao} onAtivar={pedirPermissao} />
                     <button className="cliente-identidade" onClick={() => irPara("/cliente") } title="Voltar ao início">
                         <span className="cliente-avatar">{email ? email[0].toUpperCase() : "C"}</span>
                         <span className="cliente-identidade-texto">
@@ -76,6 +83,8 @@ export default function ClienteLayout({ children }) {
                     <button className="cliente-sair" onClick={sair}>Sair</button>
                 </div>
             </aside>
+
+            <AvisoNotificacao aviso={aviso} onFechar={fecharAviso} onAbrir={() => { fecharAviso(); navigate("/cliente"); }} />
 
             <main className="cliente-conteudo">
                 {location.pathname !== "/cliente" && (

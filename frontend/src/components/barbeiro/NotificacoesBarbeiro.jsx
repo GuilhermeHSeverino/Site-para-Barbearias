@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 
+const ICONES = { STOCK_LOW: "📦", REMINDER: "⏰", REVIEW: "⭐" };
+
 export default function NotificacoesBarbeiro() {
     const [notificacoes, setNotificacoes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function NotificacoesBarbeiro() {
                             onClick={() => !notificacao.is_read && marcarComoLida(notificacao.id)}
                             style={{ display: "flex", alignItems: "flex-start", gap: "14px", width: "100%", textAlign: "left", background: notificacao.is_read ? "#171717" : "#1d2a21", border: `1px solid ${notificacao.is_read ? "#2a2a2a" : "#28613d"}`, borderRadius: "14px", padding: "18px", color: "white", cursor: notificacao.is_read ? "default" : "pointer" }}
                         >
-                            <span style={{ fontSize: "20px" }}>{notificacao.type === "STOCK_LOW" ? "📦" : "ℹ️"}</span>
+                            <span style={{ fontSize: "20px" }}>{ICONES[notificacao.type] || "ℹ️"}</span>
                             <span style={{ flex: 1 }}>
                                 <strong style={{ display: "block", marginBottom: "6px" }}>{notificacao.message}</strong>
                                 <small style={{ color: "#9ca3af" }}>{new Date(notificacao.created_at).toLocaleString("pt-BR")}</small>

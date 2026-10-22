@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 
 from app.factories import criar_barbeiro, criar_cliente, criar_servico, data_futura
 from schedule.models import Schedule
+from notifications.models import Notification
 from .models import Review
 
 
@@ -32,6 +33,7 @@ class AvaliacaoTests(APITestCase):
         avaliacao = Review.objects.get()
         self.assertEqual(avaliacao.client, self.cliente)
         self.assertEqual(avaliacao.schedule, atendimento)
+        self.assertTrue(Notification.objects.filter(barber=self.barbeiro, type="REVIEW").exists())
 
     def test_cada_atendimento_so_pode_ser_avaliado_uma_vez(self):
         self.concluir_atendimento()

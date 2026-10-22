@@ -5,6 +5,8 @@ class Notification(models.Model):
     TYPE_CHOICES = [
         ('STOCK_LOW', 'Estoque Baixo'),
         ('SYSTEM', 'Sistema'),
+        ('REMINDER', 'Lembrete'),
+        ('REVIEW', 'Avaliação'),
     ]
 
     barber = models.ForeignKey(Barber, on_delete=models.CASCADE, related_name='notifications')
@@ -12,6 +14,8 @@ class Notification(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='SYSTEM')
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    # preenchido nos lembretes, para que cada atendimento gere um único aviso
+    schedule = models.ForeignKey('schedule.Schedule', on_delete=models.CASCADE, null=True, blank=True, related_name='lembretes_barbeiro')
 
     class Meta:
         ordering = ['-created_at']
@@ -25,6 +29,7 @@ class ClientNotification(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    schedule = models.ForeignKey('schedule.Schedule', on_delete=models.CASCADE, null=True, blank=True, related_name='lembretes_cliente')
 
     class Meta:
         ordering = ['-created_at']

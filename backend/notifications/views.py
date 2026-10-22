@@ -8,13 +8,14 @@ class NotificationListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = None # Defined below for simplicity
 
-    def get_queryset(self):
-        from barber.models import Barber
-        barber = Barber.objects.get(user=self.request.user)
-        return Notification.objects.filter(barber=barber)
-
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        from barber.models import Barber
+        from .services import gerar_lembretes_barbeiro
+        barber = Barber.objects.filter(user=request.user).first()
+        if not barber:
+            return Response({"detail": "Apenas barbeiros podem ver estas notificações."}, status=403)
+        gerar_lembretes_barbeiro(barber)
+        queryset = Notification.objects.filter(barber=barber)[:50]
         data = []
         for n in queryset:
             data.append({
@@ -49,6 +50,8 @@ class ClientNotificationListView(generics.ListAPIView):
         client = Client.objects.filter(user=request.user).first()
         if not client:
             return Response({"detail": "Apenas clientes podem ver notificações."}, status=403)
+        from .services import gerar_lembretes_cliente
+        gerar_lembretes_cliente(client)
         return Response([{
             "id": item.id,
             "message": item.message,

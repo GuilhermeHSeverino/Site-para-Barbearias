@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
+import useNotificacoesAoVivo from "../../hooks/useNotificacoesAoVivo";
+import AvisoNotificacao, { BotaoAtivarAvisos } from "../AvisoNotificacao";
 import "./barberLayout.css";
 
 const LINKS = [
@@ -23,6 +25,7 @@ export default function BarberLayout({ children }) {
     const [perfil, setPerfil] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
+    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/notifications/");
 
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
@@ -64,6 +67,11 @@ export default function BarberLayout({ children }) {
                     ☰
                 </button>
                 <span className="topbar-logo">💈 Barbearia</span>
+                {naoLidas > 0 && (
+                    <button className="contador-notificacoes" style={{ border: "none", cursor: "pointer" }} onClick={() => navigate("/barbeiro/notificacoes")}>
+                        🔔 {naoLidas}
+                    </button>
+                )}
             </div>
 
             {/* BACKDROP (mobile, quando o menu está aberto) */}
@@ -95,12 +103,16 @@ export default function BarberLayout({ children }) {
                             >
                                 <span className="sidebar-icone">{link.icone}</span>
                                 {link.nome}
+                                {link.rota === "/barbeiro/notificacoes" && naoLidas > 0 && (
+                                    <span className="contador-notificacoes">{naoLidas}</span>
+                                )}
                             </button>
                         );
                     })}
                 </nav>
 
                 <div className="sidebar-rodape">
+                    <BotaoAtivarAvisos permissao={permissao} onAtivar={pedirPermissao} />
                     <button
                         className={`sidebar-usuario ${location.pathname === "/barbeiro/configuracoes" ? "perfil-ativo" : ""}`}
                         onClick={() => irPara("/barbeiro/configuracoes")}
@@ -119,6 +131,8 @@ export default function BarberLayout({ children }) {
                     </button>
                 </div>
             </aside>
+
+            <AvisoNotificacao aviso={aviso} onFechar={fecharAviso} onAbrir={() => { fecharAviso(); navigate("/barbeiro/notificacoes"); }} />
 
             {/* CONTEÚDO */}
             <main className="barber-conteudo">

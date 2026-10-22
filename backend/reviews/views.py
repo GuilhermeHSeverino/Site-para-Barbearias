@@ -9,6 +9,11 @@ class ReviewCreateListView(generics.ListCreateAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+    def perform_create(self, serializer):
+        review = serializer.save()
+        from notifications.services import notify_barber
+        notify_barber(review.barber, f"Nova avaliação de {review.client.name}: nota {review.rating}/10.", "REVIEW")
+
 class ReviewRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated,]
     serializer_class = ReviewSerializer
