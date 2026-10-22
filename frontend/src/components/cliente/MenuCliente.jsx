@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api";
 import "./MenuCliente.css";
+import { notificarNavegador } from "../../utils/notificarNavegador";
 
 function MenuCliente() {
   const [agendamentos, setAgendamentos] = useState([]);
@@ -34,10 +35,11 @@ function MenuCliente() {
     if (!proximo) return;
     const chave = `lembrete-${proximo.id}-${proximo.date}`;
     if (localStorage.getItem(chave)) return;
-    new Notification(proximo.date === hoje ? "Seu corte é hoje" : "Seu corte é amanhã", {
-      body: `${proximo.start_time.slice(0, 5)} · Confira seu agendamento na Barbearia.`,
-      icon: "/favicon.ico",
-    });
+    notificarNavegador(
+      proximo.date === hoje ? "Seu corte é hoje" : "Seu corte é amanhã",
+      `${proximo.start_time.slice(0, 5)} · Confira seu agendamento na Barbearia.`,
+      chave,
+    );
     localStorage.setItem(chave, "1");
   }, [agendamentos, notificacoesPermitidas]);
 

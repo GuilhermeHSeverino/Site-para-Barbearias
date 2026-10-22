@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import api from "../api";
+import { notificarNavegador } from "../utils/notificarNavegador";
 
 const INTERVALO_MS = 30000;
 // na primeira consulta, só avisa o que chegou há pouco (o restante já era conhecido)
 const RECENTE_MS = 2 * 60 * 1000;
-
-function notificarNoNavegador(mensagem, id) {
-    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
-    try {
-        new Notification("Barbearia", { body: mensagem, tag: `notificacao-${id}` });
-    } catch {
-        // alguns navegadores de celular só permitem notificações por service worker
-    }
-}
 
 // Consulta as notificações periodicamente e informa o total não lido e a mais recente que chegou.
 export default function useNotificacoesAoVivo(endpoint) {
@@ -42,7 +34,7 @@ export default function useNotificacoesAoVivo(endpoint) {
 
                 if (novas.length) {
                     setAviso(novas[0]);
-                    novas.slice(0, 3).forEach((n) => notificarNoNavegador(n.message, n.id));
+                    novas.slice(0, 3).forEach((n) => notificarNavegador("Barbearia", n.message, `notificacao-${n.id}`));
                 }
             } catch {
                 // falha temporária de rede: tenta de novo no próximo ciclo
