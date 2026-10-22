@@ -20,7 +20,8 @@ class IsBarberOrAdmin(BasePermission):
 
 class StockCreateListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly,]
-    queryset = Stock.objects.all()
+    # select_related evita uma consulta extra por item para ler o produto
+    queryset = Stock.objects.select_related("product")
     serializer_class = StockSerializer
 
     def get_permissions(self):

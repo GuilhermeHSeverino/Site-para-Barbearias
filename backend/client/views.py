@@ -25,7 +25,8 @@ class ClientCreateListView(generics.ListCreateAPIView):
     serializer_class = ClientSerializer
 
     def get_queryset(self):
-        queryset = Client.objects.all()
+        # select_related evita uma consulta extra por cliente para ler o usuário
+        queryset = Client.objects.select_related("user")
         barber_id = self.request.query_params.get('barber_id')
 
         if barber_id:

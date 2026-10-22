@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 
 class BarberCreateListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly,]
-    queryset = Barber.objects.all()
+    queryset = Barber.objects.select_related("user")
     serializer_class = BarberSerializer
 
     def get_permissions(self):
