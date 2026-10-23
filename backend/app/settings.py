@@ -170,10 +170,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Arquivos enviados pelos usuários durante o desenvolvimento.
-# A pasta raiz preserva os uploads existentes em backend/barbers/.
+# Arquivos enviados pelos usuários (fotos dos barbeiros). Precisa ser uma pasta só para uploads:
+# a rota /media/ entrega qualquer arquivo dela, então nunca pode apontar para a pasta do código.
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

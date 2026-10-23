@@ -78,10 +78,7 @@ function FeedbacksBarbeiro() {
 
     const totalFeedbacks = feedbacks.length;
 
-    const notaMedia =
-        totalFeedbacks === 0
-            ? 0
-            : feedbacks.reduce((acc, f) => acc + f.rating, 0) / totalFeedbacks;
+    const notaMedia = totalFeedbacks === 0 ? 0 : feedbacks.reduce((acc, f) => acc + f.rating, 0) / totalFeedbacks;
 
     const notas = feedbacks.map((f) => f.rating);
     const notaMaisAlta = notas.length ? Math.max(...notas) : 0;
@@ -89,7 +86,6 @@ function FeedbacksBarbeiro() {
 
     return (
         <div className="feedbacks-container">
-
             {/* HEADER */}
             <div className="feedbacks-header">
                 <button className="btn-voltar" onClick={() => navigate("/barbeiro/")}>
@@ -98,9 +94,7 @@ function FeedbacksBarbeiro() {
 
                 <div>
                     <h1>⭐ Feedbacks Recebidos</h1>
-                    <p className="feedbacks-subtitle">
-                        Acompanhe as avaliações dos seus clientes
-                    </p>
+                    <p className="feedbacks-subtitle">Acompanhe as avaliações dos seus clientes</p>
                 </div>
             </div>
 
@@ -139,27 +133,27 @@ function FeedbacksBarbeiro() {
                     <p className="estado-msg">Nenhum feedback encontrado.</p>
                 ) : (
                     <div className="feedbacks-grid">
-                        {[...feedbacks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, visiveis).map((fb) => (
-                            <div key={fb.id} className="feedback-item">
-                                <div className="feedback-topo">
-                                    <Estrelas rating={fb.rating} />
-                                    <span className={corDaNota(fb.rating)}>{fb.rating}/10</span>
+                        {[...feedbacks]
+                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                            .slice(0, visiveis)
+                            .map((fb) => (
+                                <div key={fb.id} className="feedback-item">
+                                    <div className="feedback-topo">
+                                        <Estrelas rating={fb.rating} />
+                                        <span className={corDaNota(fb.rating)}>{fb.rating}/10</span>
+                                    </div>
+
+                                    <p className="feedback-comentario">{fb.comment || "Sem comentário"}</p>
+
+                                    <p className="feedback-data">
+                                        {new Date(fb.created_at).toLocaleDateString("pt-BR")}
+                                    </p>
                                 </div>
-
-                                <p className="feedback-comentario">
-                                    {fb.comment || "Sem comentário"}
-                                </p>
-
-                                <p className="feedback-data">
-                                    {new Date(fb.created_at).toLocaleDateString("pt-BR")}
-                                </p>
-                            </div>
-                        ))}
+                            ))}
                     </div>
                 )}
                 <MostrarMais total={feedbacks.length} visiveis={visiveis} onMostrar={setVisiveis} />
             </div>
-
         </div>
     );
 }

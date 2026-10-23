@@ -2,9 +2,7 @@ import api from "../../api";
 
 export async function listarProdutosDisponiveis() {
     const response = await api.get("/api/v1/stock/");
-    return response.data.filter(
-        (item) => item.quantity > 0 && item.product_disponivel_na_loja
-    );
+    return response.data.filter((item) => item.quantity > 0 && item.product_disponivel_na_loja);
 }
 
 export async function listarBarbeirosParaRetirada() {

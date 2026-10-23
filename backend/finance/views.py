@@ -1,23 +1,15 @@
+"""Financeiro da barbearia: todos os barbeiros veem os mesmos lançamentos."""
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.permissions import BasePermission, IsAdminUser
+from rest_framework.permissions import IsAdminUser
 from django.db.models import Sum
 from django.utils.timezone import localdate
 from datetime import timedelta
 from .models import Finances
 from .serializers import FinancesSerializer
-from barber.models import Barber
+from app.permissoes import IsBarberOrAdmin
 
 
-class IsBarberOrAdmin(BasePermission):
-    """Barbeiros e administradores podem consultar o financeiro da barbearia."""
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and (
-            request.user.is_staff or Barber.objects.filter(user=request.user).exists()
-        ))
-
-
-# 🔥 FILTRO DE PERÍODO
 def filtrar_periodo(queryset, periodo):
     today = localdate()  # data de Brasília, não a do servidor (UTC)
 
@@ -37,7 +29,6 @@ def filtrar_periodo(queryset, periodo):
     return queryset
 
 
-# 🔥 LISTAR / CRIAR
 class FinancesListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsBarberOrAdmin]
     serializer_class = FinancesSerializer
@@ -49,14 +40,12 @@ class FinancesListCreateView(generics.ListCreateAPIView):
         return filtrar_periodo(queryset, periodo)
 
 
-# 🔥 CRUD
 class FinancesRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     queryset = Finances.objects.all()
     serializer_class = FinancesSerializer
 
 
-# 🔥 RELATÓRIO (CORRIGIDO)
 class FinanceReportAPIView(generics.GenericAPIView):
     permission_classes = [IsBarberOrAdmin]
 
@@ -99,7 +88,6 @@ class FinanceSummaryAPIView(generics.GenericAPIView):
         })
 
 
-# 🔥 SALDO ACUMULADO (PERFEITO PRO FRONT)
 class FinanceSaldoAPIView(generics.GenericAPIView):
     permission_classes = [IsBarberOrAdmin]
 
@@ -115,13 +103,12 @@ class FinanceSaldoAPIView(generics.GenericAPIView):
         data = []
 
         for f in queryset:
-            # 🔥 ENTRADA / SAÍDA
             if f.tipo == "entrada":
                 saldo += f.valor
             else:
                 saldo -= f.valor
 
-            # 🔥 DESCRIÇÃO DINÂMICA (PROFISSIONAL)
+            # descrição que aparece no extrato
             descricao = ""
 
             if f.descricao:

@@ -19,13 +19,12 @@ function MenuBarbeiro() {
         const agora = new Date();
         const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
 
-        const [schedRes, financeMesRes, financeDiaRes, stockAlertsRes] =
-            await Promise.allSettled([
-                api.get("/api/v1/schedule/", { params: { data_inicio: hoje, data_fim: hoje } }),
-                api.get("/api/v1/finance-summary/?periodo=mensal"),
-                api.get("/api/v1/finance-summary/?periodo=diario"),
-                api.get("/api/v1/stock-alerts/"),
-            ]);
+        const [schedRes, financeMesRes, financeDiaRes, stockAlertsRes] = await Promise.allSettled([
+            api.get("/api/v1/schedule/", { params: { data_inicio: hoje, data_fim: hoje } }),
+            api.get("/api/v1/finance-summary/?periodo=mensal"),
+            api.get("/api/v1/finance-summary/?periodo=diario"),
+            api.get("/api/v1/stock-alerts/"),
+        ]);
 
         if (schedRes.status === "fulfilled") {
             const doDia = schedRes.value.data
@@ -50,8 +49,7 @@ function MenuBarbeiro() {
         setLoading(false);
     };
 
-    const formatarMoeda = (v) =>
-        v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const formatarMoeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
     const statusInfo = (status) => {
         switch (status?.toLowerCase()) {
@@ -77,7 +75,6 @@ function MenuBarbeiro() {
 
     return (
         <div className="menu-barbeiro-container">
-
             <div className="menu-barbeiro-header">
                 <h1>Bem-vindo de volta 👋</h1>
                 <p>Aqui está um resumo rápido do seu dia</p>
@@ -109,9 +106,7 @@ function MenuBarbeiro() {
 
                 <div className="home-stat-card">
                     <span>Estoque baixo</span>
-                    <h2 className={estoqueBaixo > 0 ? "home-vermelho" : ""}>
-                        {loading ? "—" : estoqueBaixo}
-                    </h2>
+                    <h2 className={estoqueBaixo > 0 ? "home-vermelho" : ""}>{loading ? "—" : estoqueBaixo}</h2>
                 </div>
             </div>
 
@@ -134,18 +129,14 @@ function MenuBarbeiro() {
                             const info = statusInfo(ag.status);
                             return (
                                 <div key={ag.id} className="agenda-hoje-item">
-                                    <span className="agenda-hoje-hora">
-                                        {ag.start_time?.slice(0, 5)}
-                                    </span>
+                                    <span className="agenda-hoje-hora">{ag.start_time?.slice(0, 5)}</span>
 
                                     <div className="agenda-hoje-info">
                                         <strong>{ag.client_name_display}</strong>
                                         <p>{ag.service_name}</p>
                                     </div>
 
-                                    <span className={`agenda-hoje-badge ${info.classe}`}>
-                                        {info.label}
-                                    </span>
+                                    <span className={`agenda-hoje-badge ${info.classe}`}>{info.label}</span>
                                 </div>
                             );
                         })}

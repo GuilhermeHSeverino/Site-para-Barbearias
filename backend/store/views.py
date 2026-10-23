@@ -12,6 +12,7 @@ from stock.models import Stock, StockMovement
 from finance.models import Finances
 from barber.models import Barber
 from notifications.models import Notification
+from notifications.services import notify_barber, notify_client
 
 class StoreListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdminUser]
@@ -63,7 +64,6 @@ class StoreSaleView(APIView):
                 return Response({"detail": "Estoque insuficiente para reservar este pedido."}, status=400)
             store_sale = Store.objects.create(stock=stock, client=client, barber=barber, quantity_sold=quantity, status="pendente", payment_method=payment_method)
 
-        from notifications.services import notify_barber, notify_client
         notify_barber(
             barber,
             f"Novo pedido: {client.name} reservou {quantity} unidade(s) de {stock.product.name} para retirada.",
@@ -130,7 +130,6 @@ class StoreCancelView(APIView):
             return Response({"detail": "Somente pedidos pendentes podem ser cancelados."}, status=400)
         pedido.status = "cancelado"
         pedido.save(update_fields=["status"])
-        from notifications.services import notify_barber
         if pedido.barber:
             notify_barber(
                 pedido.barber,
@@ -167,7 +166,6 @@ class StoreConfirmView(APIView):
             pedido.status = "entregue"
             pedido.save(update_fields=["status"])
 
-            from notifications.services import notify_barber, notify_client
             notify_client(
                 pedido.client,
                 f"Pedido de {pedido.stock.product.name} confirmado para retirada. Pagamento registrado na entrega.",

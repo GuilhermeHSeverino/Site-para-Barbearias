@@ -17,7 +17,7 @@ export default function useNotificacoesAoVivo(endpoint) {
     const [naoLidas, setNaoLidas] = useState(0);
     const [aviso, setAviso] = useState(null);
     const [permissao, setPermissao] = useState(
-        typeof Notification !== "undefined" ? Notification.permission : "unsupported"
+        typeof Notification !== "undefined" ? Notification.permission : "unsupported",
     );
     const conhecidas = useRef(null);
 
@@ -33,8 +33,11 @@ export default function useNotificacoesAoVivo(endpoint) {
 
                 const primeiraConsulta = conhecidas.current === null;
                 const vistas = conhecidas.current || new Set();
-                const novas = pendentes.filter((n) => !vistas.has(n.id) &&
-                    (!primeiraConsulta || Date.now() - new Date(n.created_at).getTime() < RECENTE_MS));
+                const novas = pendentes.filter(
+                    (n) =>
+                        !vistas.has(n.id) &&
+                        (!primeiraConsulta || Date.now() - new Date(n.created_at).getTime() < RECENTE_MS),
+                );
                 data.forEach((n) => vistas.add(n.id));
                 conhecidas.current = vistas;
 

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -30,21 +29,13 @@ function ClientesBarbeiro() {
                 throw new Error("Usuário não autenticado");
             }
 
-            const decoded = jwtDecode(token);
-            const email = decoded.email;
-
-            // 1. Buscar o ID do barbeiro através do email
-            const resBarber = await api.get("/api/v1/barber/", {
-                params: { email },
-            });
-
-            if (!resBarber.data || resBarber.data.length === 0) {
+            // o id do barbeiro logado vem no próprio token
+            const barberId = jwtDecode(token).barber_id;
+            if (!barberId) {
                 throw new Error("Perfil de barbeiro não encontrado");
             }
 
-            const barberId = resBarber.data[0].id;
-
-            // 2. Buscar clientes vinculados a este barbeiro
+            // clientes que já foram atendidos por este barbeiro
             const resClients = await api.get("/api/v1/client/", {
                 params: { barber_id: barberId },
             });
@@ -60,9 +51,12 @@ function ClientesBarbeiro() {
 
     const clientesFiltrados = clientes.filter((cliente) => {
         const termo = busca.trim().toLowerCase();
-        return !termo || [cliente.name, cliente.email, cliente.phone]
-            .filter(Boolean)
-            .some((valor) => valor.toLowerCase().includes(termo));
+        return (
+            !termo ||
+            [cliente.name, cliente.email, cliente.phone]
+                .filter(Boolean)
+                .some((valor) => valor.toLowerCase().includes(termo))
+        );
     });
 
     return (
@@ -75,7 +69,7 @@ function ClientesBarbeiro() {
                 color: "white",
             }}
         >
-            {/* HEADER - Padrão Premium */}
+            {/* CABEÇALHO */}
             <div
                 style={{
                     marginBottom: "32px",
@@ -136,22 +130,38 @@ function ClientesBarbeiro() {
                                 margin: "4px 0 0 0",
                             }}
                         >
-                            Gerencie a base de clientes que já passaram pela sua
-                            cadeira.
+                            Gerencie a base de clientes que já passaram pela sua cadeira.
                         </p>
                     </div>
                 </div>
             </div>
 
             {!loading && clientes.length > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px", flexWrap: "wrap" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "16px",
+                        marginBottom: "20px",
+                        flexWrap: "wrap",
+                    }}
+                >
                     <input
                         type="search"
                         value={busca}
                         onChange={(e) => setBusca(e.target.value)}
                         placeholder="Buscar por nome, telefone ou e-mail"
                         aria-label="Buscar clientes"
-                        style={{ flex: "1 1 280px", maxWidth: "520px", background: "#171717", border: "1px solid #2a2a2a", borderRadius: "10px", color: "white", padding: "12px 14px", outline: "none" }}
+                        style={{
+                            flex: "1 1 280px",
+                            maxWidth: "520px",
+                            background: "#171717",
+                            border: "1px solid #2a2a2a",
+                            borderRadius: "10px",
+                            color: "white",
+                            padding: "12px 14px",
+                            outline: "none",
+                        }}
                     />
                     <span style={{ color: "#9ca3af", fontSize: "13px" }}>
                         {clientesFiltrados.length} de {clientes.length} cliente(s)
@@ -180,31 +190,33 @@ function ClientesBarbeiro() {
                         color: "#9ca3af",
                     }}
                 >
-                    <p>
-                        Você ainda não possui clientes registrados no sistema.
-                    </p>
+                    <p>Você ainda não possui clientes registrados no sistema.</p>
                 </div>
             ) : clientesFiltrados.length === 0 ? (
-                <div style={{ backgroundColor: "#171717", border: "1px solid #2a2a2a", borderRadius: "16px", padding: "40px", textAlign: "center", color: "#9ca3af" }}>
+                <div
+                    style={{
+                        backgroundColor: "#171717",
+                        border: "1px solid #2a2a2a",
+                        borderRadius: "16px",
+                        padding: "40px",
+                        textAlign: "center",
+                        color: "#9ca3af",
+                    }}
+                >
                     <p>Nenhum cliente encontrado para essa busca.</p>
                 </div>
             ) : (
                 <div
                     style={{
                         display: "grid",
-                        gridTemplateColumns:
-                            "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
                         gap: "20px",
                     }}
                 >
                     {clientesFiltrados.map((cliente) => (
                         <div
                             key={cliente.id}
-                            onClick={() =>
-                                navigate(
-                                    `/barbeiro/clientes/${cliente.id}`
-                                )
-                            }
+                            onClick={() => navigate(`/barbeiro/clientes/${cliente.id}`)}
                             style={{
                                 background: "#171717",
                                 border: "1px solid #2a2a2a",
@@ -216,10 +228,8 @@ function ClientesBarbeiro() {
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.borderColor = "#22c55e";
-                                e.currentTarget.style.transform =
-                                    "translateY(-3px)";
-                                e.currentTarget.style.boxShadow =
-                                    "0 10px 20px rgba(0,0,0,0.3)";
+                                e.currentTarget.style.transform = "translateY(-3px)";
+                                e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.3)";
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.borderColor = "#2a2a2a";
@@ -250,9 +260,7 @@ function ClientesBarbeiro() {
                                         border: "2px solid #22c55e",
                                     }}
                                 >
-                                    {cliente.name
-                                        ? cliente.name[0].toUpperCase()
-                                        : "?"}
+                                    {cliente.name ? cliente.name[0].toUpperCase() : "?"}
                                 </div>
 
                                 <div>
@@ -332,4 +340,3 @@ function ClientesBarbeiro() {
 }
 
 export default ClientesBarbeiro;
-

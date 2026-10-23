@@ -5,23 +5,13 @@ class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
         fields = '__all__'
+
+    # usado só pelas rotas de administrador de /stores/; o fluxo da loja fica em store/views.py
     def create(self, validated_data):
-            # Obtém a quantidade vendida
-            quantity = validated_data.get('quantity_sold', 0)
-            
-            # Cria a instância do modelo Store
-            store = Store.objects.create(**validated_data)
-            
-            # Chama o método `sell_product` para ajustar o estoque
-            store.sell_product(quantity)
-            
-            return store
-        
+        store = Store.objects.create(**validated_data)
+        store.sell_product(validated_data.get('quantity_sold', 0))
+        return store
+
     def update(self, instance, validated_data):
-            # Atualiza os dados da instância
-            quantity = validated_data.get('quantity_sold', instance.quantity_sold)
-            
-            # Chama o método `sell_product` para ajustar o estoque
-            instance.sell_product(quantity)
-            
-            return super().update(instance, validated_data)
+        instance.sell_product(validated_data.get('quantity_sold', instance.quantity_sold))
+        return super().update(instance, validated_data)

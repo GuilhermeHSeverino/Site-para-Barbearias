@@ -1,15 +1,9 @@
 from rest_framework import generics
 from .models import Product
 from .serializers import ProductSerializer
-from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly, BasePermission
-from barber.models import Barber
+from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 
-
-class IsBarberOrAdmin(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and (
-            request.user.is_staff or Barber.objects.filter(user=request.user).exists()
-        ))
+from app.permissoes import IsBarberOrAdmin
 
 
 class ProductCreateListView(generics.ListCreateAPIView):

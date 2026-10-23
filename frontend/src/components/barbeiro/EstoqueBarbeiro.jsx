@@ -30,14 +30,22 @@ export default function EstoqueBarbeiro() {
     const [formProdutoAberto, setFormProdutoAberto] = useState(false);
     const [movimentoAberto, setMovimentoAberto] = useState(false);
     const [historicoCompleto, setHistoricoCompleto] = useState(false);
-    const [novoProduto, setNovoProduto] = useState({ name: "", description: "", price: "", custo: "", estoque_minimo: 5, quantity: 0, disponivel_na_loja: false });
+    const [novoProduto, setNovoProduto] = useState({
+        name: "",
+        description: "",
+        price: "",
+        custo: "",
+        estoque_minimo: 5,
+        quantity: 0,
+        disponivel_na_loja: false,
+    });
 
     const [movimento, setMovimento] = useState({
         product: "",
         type: "entrada",
         quantity: 1,
         description: "",
-        custo: ""
+        custo: "",
     });
 
     const token = localStorage.getItem(ACCESS_TOKEN);
@@ -86,7 +94,11 @@ export default function EstoqueBarbeiro() {
 
     const confirmarEntrega = async (id) => {
         try {
-            await api.patch(`/api/v1/stores/${id}/confirm/`, { payment_method: pagamentoPedido[id] || "dinheiro" }, config);
+            await api.patch(
+                `/api/v1/stores/${id}/confirm/`,
+                { payment_method: pagamentoPedido[id] || "dinheiro" },
+                config,
+            );
             await carregarPedidos();
             await carregarProdutos();
             await carregarMovimentos();
@@ -109,7 +121,7 @@ export default function EstoqueBarbeiro() {
                 type: "entrada",
                 quantity: 1,
                 description: "",
-                custo: ""
+                custo: "",
             });
             setMovimentoAberto(false);
 
@@ -123,24 +135,34 @@ export default function EstoqueBarbeiro() {
         }
     };
 
-    const produtosFiltrados = produtos.filter((p) =>
-        p.product_name?.toLowerCase().includes(busca.toLowerCase())
-    );
+    const produtosFiltrados = produtos.filter((p) => p.product_name?.toLowerCase().includes(busca.toLowerCase()));
 
     const adicionarProduto = async () => {
         if (!novoProduto.name || !novoProduto.price) return alert("Informe nome e preço do produto.");
         setAdicionandoProduto(true);
         try {
-            await api.post("/api/v1/products/", {
-                name: novoProduto.name,
-                description: novoProduto.description,
-                price: novoProduto.price,
-                estoque_minimo: novoProduto.estoque_minimo,
-                initial_quantity: novoProduto.quantity,
-                disponivel_na_loja: novoProduto.disponivel_na_loja,
-                ...(novoProduto.custo ? { custo_total: novoProduto.custo } : {}),
-            }, config);
-            setNovoProduto({ name: "", description: "", price: "", custo: "", estoque_minimo: 5, quantity: 0, disponivel_na_loja: false });
+            await api.post(
+                "/api/v1/products/",
+                {
+                    name: novoProduto.name,
+                    description: novoProduto.description,
+                    price: novoProduto.price,
+                    estoque_minimo: novoProduto.estoque_minimo,
+                    initial_quantity: novoProduto.quantity,
+                    disponivel_na_loja: novoProduto.disponivel_na_loja,
+                    ...(novoProduto.custo ? { custo_total: novoProduto.custo } : {}),
+                },
+                config,
+            );
+            setNovoProduto({
+                name: "",
+                description: "",
+                price: "",
+                custo: "",
+                estoque_minimo: 5,
+                quantity: 0,
+                disponivel_na_loja: false,
+            });
             setFormProdutoAberto(false);
             await carregarProdutos();
         } catch (err) {
@@ -158,26 +180,21 @@ export default function EstoqueBarbeiro() {
         return acc + p.quantity * preco;
     }, 0);
 
-    const estoqueBaixo = produtos.filter(
-        (p) => p.quantity <= (p.product_estoque_minimo ?? 5)
-    ).length;
+    const estoqueBaixo = produtos.filter((p) => p.quantity <= (p.product_estoque_minimo ?? 5)).length;
 
     const itensArmazenados = produtos.reduce((a, p) => a + p.quantity, 0);
 
     return (
         <div className="estoque-container">
-
             {/* HEADER */}
             <div className="estoque-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                     <button className="btn-voltar" onClick={() => navigate("/barbeiro/")}>
                         ← Voltar
                     </button>
                     <div>
                         <h1 style={{ margin: 0 }}>📦 Gestão de Estoque</h1>
-                        <p className="estoque-subtitle">
-                            Acompanhe produtos, movimentações e valor do seu estoque
-                        </p>
+                        <p className="estoque-subtitle">Acompanhe produtos, movimentações e valor do seu estoque</p>
                     </div>
                 </div>
 
@@ -197,28 +214,124 @@ export default function EstoqueBarbeiro() {
 
             {erro && <div className="erro-msg">{erro}</div>}
 
-            {pedidos.length > 0 && <div className="movimento-card" style={{ marginBottom: "24px" }}>
-                <h2>Pedidos aguardando retirada</h2>
-                <div className="lista">{pedidos.slice(0, pedidosVisiveis).map((pedido) => <div className="pedido-item" key={pedido.id}><div><strong>{pedido.product}</strong><p>{pedido.client} · Quantidade: {pedido.quantity}</p></div><div className="pedido-acoes"><select className="pedido-pagamento" aria-label="Forma de pagamento" value={pagamentoPedido[pedido.id] || "dinheiro"} onChange={(e) => setPagamentoPedido({ ...pagamentoPedido, [pedido.id]: e.target.value })}>{PAGAMENTOS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}</select><button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>Confirmar entrega</button></div></div>)}</div>
-                <MostrarMais total={pedidos.length} visiveis={pedidosVisiveis} passo={5} onMostrar={setPedidosVisiveis} />
-            </div>}
-
-            {formProdutoAberto && <div className="movimento-card" style={{ marginBottom: "24px" }}>
-                <h2>Novo produto no estoque</h2>
-                <div className="movimento-form" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
-                    <div className="campo-grupo"><label>Nome</label><input value={novoProduto.name} onChange={(e) => setNovoProduto({ ...novoProduto, name: e.target.value })} placeholder="Ex: Pomada modeladora" /></div>
-                    <div className="campo-grupo"><label>Descrição</label><input value={novoProduto.description} onChange={(e) => setNovoProduto({ ...novoProduto, description: e.target.value })} placeholder="Descrição do produto" /></div>
-                    <div className="campo-grupo"><label>Preço de venda (R$)</label><input type="number" min="0" step="0.01" value={novoProduto.price} onChange={(e) => setNovoProduto({ ...novoProduto, price: e.target.value })} /></div>
-                    <div className="campo-grupo"><label>Quantidade inicial</label><input type="number" min="0" value={novoProduto.quantity} onChange={(e) => setNovoProduto({ ...novoProduto, quantity: e.target.value })} /></div>
-                    <div className="campo-grupo"><label>Custo da compra (R$, opcional)</label><input type="number" min="0" step="0.01" placeholder="Total pago ao fornecedor" value={novoProduto.custo} onChange={(e) => setNovoProduto({ ...novoProduto, custo: e.target.value })} /></div>
-                    <label className="campo-grupo" style={{ flexDirection: "row", alignItems: "center", gap: "8px" }}><input type="checkbox" checked={novoProduto.disponivel_na_loja} onChange={(e) => setNovoProduto({ ...novoProduto, disponivel_na_loja: e.target.checked })} /> Vender também na loja virtual</label>
-                    <button className="btn-confirmar-mov" onClick={adicionarProduto} disabled={adicionandoProduto}>{adicionandoProduto ? "Salvando..." : "Salvar produto"}</button>
+            {pedidos.length > 0 && (
+                <div className="movimento-card" style={{ marginBottom: "24px" }}>
+                    <h2>Pedidos aguardando retirada</h2>
+                    <div className="lista">
+                        {pedidos.slice(0, pedidosVisiveis).map((pedido) => (
+                            <div className="pedido-item" key={pedido.id}>
+                                <div>
+                                    <strong>{pedido.product}</strong>
+                                    <p>
+                                        {pedido.client} · Quantidade: {pedido.quantity}
+                                    </p>
+                                </div>
+                                <div className="pedido-acoes">
+                                    <select
+                                        className="pedido-pagamento"
+                                        aria-label="Forma de pagamento"
+                                        value={pagamentoPedido[pedido.id] || "dinheiro"}
+                                        onChange={(e) =>
+                                            setPagamentoPedido({ ...pagamentoPedido, [pedido.id]: e.target.value })
+                                        }
+                                    >
+                                        {PAGAMENTOS.map((p) => (
+                                            <option key={p.value} value={p.value}>
+                                                {p.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button className="btn-confirmar-mov" onClick={() => confirmarEntrega(pedido.id)}>
+                                        Confirmar entrega
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <MostrarMais
+                        total={pedidos.length}
+                        visiveis={pedidosVisiveis}
+                        passo={5}
+                        onMostrar={setPedidosVisiveis}
+                    />
                 </div>
-            </div>}
+            )}
+
+            {formProdutoAberto && (
+                <div className="movimento-card" style={{ marginBottom: "24px" }}>
+                    <h2>Novo produto no estoque</h2>
+                    <div
+                        className="movimento-form"
+                        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}
+                    >
+                        <div className="campo-grupo">
+                            <label>Nome</label>
+                            <input
+                                value={novoProduto.name}
+                                onChange={(e) => setNovoProduto({ ...novoProduto, name: e.target.value })}
+                                placeholder="Ex: Pomada modeladora"
+                            />
+                        </div>
+                        <div className="campo-grupo">
+                            <label>Descrição</label>
+                            <input
+                                value={novoProduto.description}
+                                onChange={(e) => setNovoProduto({ ...novoProduto, description: e.target.value })}
+                                placeholder="Descrição do produto"
+                            />
+                        </div>
+                        <div className="campo-grupo">
+                            <label>Preço de venda (R$)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={novoProduto.price}
+                                onChange={(e) => setNovoProduto({ ...novoProduto, price: e.target.value })}
+                            />
+                        </div>
+                        <div className="campo-grupo">
+                            <label>Quantidade inicial</label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={novoProduto.quantity}
+                                onChange={(e) => setNovoProduto({ ...novoProduto, quantity: e.target.value })}
+                            />
+                        </div>
+                        <div className="campo-grupo">
+                            <label>Custo da compra (R$, opcional)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="Total pago ao fornecedor"
+                                value={novoProduto.custo}
+                                onChange={(e) => setNovoProduto({ ...novoProduto, custo: e.target.value })}
+                            />
+                        </div>
+                        <label
+                            className="campo-grupo"
+                            style={{ flexDirection: "row", alignItems: "center", gap: "8px" }}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={novoProduto.disponivel_na_loja}
+                                onChange={(e) =>
+                                    setNovoProduto({ ...novoProduto, disponivel_na_loja: e.target.checked })
+                                }
+                            />{" "}
+                            Vender também na loja virtual
+                        </label>
+                        <button className="btn-confirmar-mov" onClick={adicionarProduto} disabled={adicionandoProduto}>
+                            {adicionandoProduto ? "Salvando..." : "Salvar produto"}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* CARDS */}
             <div className="cards-dashboard">
-
                 <div className="dashboard-card">
                     <span>Produtos</span>
                     <h2>{totalProdutos}</h2>
@@ -238,12 +351,10 @@ export default function EstoqueBarbeiro() {
                     <span>Itens armazenados</span>
                     <h2>{itensArmazenados}</h2>
                 </div>
-
             </div>
 
             {/* PAINEL PRINCIPAL: PRODUTOS + MOVIMENTAÇÃO */}
             <div className={`painel-principal ${movimentoAberto ? "" : "sem-lateral"}`}>
-
                 {/* PRODUTOS */}
                 <div className="produtos-card">
                     <h2>Produtos</h2>
@@ -293,89 +404,82 @@ export default function EstoqueBarbeiro() {
                 </div>
 
                 {/* NOVA MOVIMENTAÇÃO */}
-                {movimentoAberto && <div className="movimento-card">
-                    <div className="movimento-topo">
-                        <h2>Nova movimentação</h2>
-                        <button className="btn-fechar" onClick={() => setMovimentoAberto(false)}>✕</button>
-                    </div>
-
-                    <div className="movimento-form">
-                        <div className="campo-grupo">
-                            <label>Produto</label>
-                            <select
-                                value={movimento.product}
-                                onChange={(e) =>
-                                    setMovimento({ ...movimento, product: e.target.value })
-                                }
-                            >
-                                <option value="">Selecione o produto</option>
-                                {produtos.map((p) => (
-                                    <option key={p.id} value={p.product}>
-                                        {p.product_name}
-                                    </option>
-                                ))}
-                            </select>
+                {movimentoAberto && (
+                    <div className="movimento-card">
+                        <div className="movimento-topo">
+                            <h2>Nova movimentação</h2>
+                            <button className="btn-fechar" onClick={() => setMovimentoAberto(false)}>
+                                ✕
+                            </button>
                         </div>
 
-                        <div className="campo-grupo">
-                            <label>Tipo</label>
-                            <select
-                                value={movimento.type}
-                                onChange={(e) =>
-                                    setMovimento({ ...movimento, type: e.target.value })
-                                }
-                            >
-                                <option value="entrada">Entrada</option>
-                                <option value="saida">Saída</option>
-                            </select>
-                        </div>
-
-                        <div className="campo-grupo">
-                            <label>Quantidade</label>
-                            <input
-                                type="number"
-                                min="1"
-                                value={movimento.quantity}
-                                onChange={(e) =>
-                                    setMovimento({ ...movimento, quantity: e.target.value })
-                                }
-                            />
-                        </div>
-
-                        {movimento.type === "entrada" && (
+                        <div className="movimento-form">
                             <div className="campo-grupo">
-                                <label>Custo da compra (R$, opcional)</label>
+                                <label>Produto</label>
+                                <select
+                                    value={movimento.product}
+                                    onChange={(e) => setMovimento({ ...movimento, product: e.target.value })}
+                                >
+                                    <option value="">Selecione o produto</option>
+                                    {produtos.map((p) => (
+                                        <option key={p.id} value={p.product}>
+                                            {p.product_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="campo-grupo">
+                                <label>Tipo</label>
+                                <select
+                                    value={movimento.type}
+                                    onChange={(e) => setMovimento({ ...movimento, type: e.target.value })}
+                                >
+                                    <option value="entrada">Entrada</option>
+                                    <option value="saida">Saída</option>
+                                </select>
+                            </div>
+
+                            <div className="campo-grupo">
+                                <label>Quantidade</label>
                                 <input
                                     type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="Total pago ao fornecedor"
-                                    value={movimento.custo}
-                                    onChange={(e) =>
-                                        setMovimento({ ...movimento, custo: e.target.value })
-                                    }
+                                    min="1"
+                                    value={movimento.quantity}
+                                    onChange={(e) => setMovimento({ ...movimento, quantity: e.target.value })}
                                 />
                             </div>
-                        )}
 
-                        <div className="campo-grupo">
-                            <label>Descrição</label>
-                            <input
-                                type="text"
-                                placeholder="Ex: Compra de fornecedor"
-                                value={movimento.description}
-                                onChange={(e) =>
-                                    setMovimento({ ...movimento, description: e.target.value })
-                                }
-                            />
+                            {movimento.type === "entrada" && (
+                                <div className="campo-grupo">
+                                    <label>Custo da compra (R$, opcional)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Total pago ao fornecedor"
+                                        value={movimento.custo}
+                                        onChange={(e) => setMovimento({ ...movimento, custo: e.target.value })}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="campo-grupo">
+                                <label>Descrição</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ex: Compra de fornecedor"
+                                    value={movimento.description}
+                                    onChange={(e) => setMovimento({ ...movimento, description: e.target.value })}
+                                />
+                            </div>
+
+                            <button className="btn-confirmar-mov" onClick={enviarMovimento} disabled={enviando}>
+                                {enviando ? "Enviando..." : "Confirmar movimentação"}
+                            </button>
                         </div>
-
-                        <button className="btn-confirmar-mov" onClick={enviarMovimento} disabled={enviando}>
-                            {enviando ? "Enviando..." : "Confirmar movimentação"}
-                        </button>
                     </div>
-                </div>}
-
+                )}
             </div>
 
             {/* HISTÓRICO */}
@@ -411,11 +515,12 @@ export default function EstoqueBarbeiro() {
 
                 {movimentos.length > 8 && (
                     <button className="btn-ver-mais" onClick={() => setHistoricoCompleto(!historicoCompleto)}>
-                        {historicoCompleto ? "Mostrar só as mais recentes" : `Ver histórico completo (${movimentos.length})`}
+                        {historicoCompleto
+                            ? "Mostrar só as mais recentes"
+                            : `Ver histórico completo (${movimentos.length})`}
                     </button>
                 )}
             </div>
-
         </div>
     );
 }

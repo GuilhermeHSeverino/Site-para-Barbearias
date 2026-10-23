@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class ClientSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True) 
-    is_superuser = serializers.SerializerMethodField()  # Campo adicional para verificar superusuário
+    is_superuser = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
@@ -27,15 +27,14 @@ class ClientSerializer(serializers.ModelSerializer):
         return value
     
     def create(self, validated_data):
-        # Criação do User com a senha fornecida
-        password = validated_data.pop('password')  # Remover a senha dos dados validados
+        # o login usa o e-mail como nome de usuário
+        password = validated_data.pop('password')
         user = User.objects.create_user(
-            username=validated_data['email'],  # Usar o email como username
+            username=validated_data['email'],
             email=validated_data['email'],
             password=password
         )
 
-        # Criar o Client e associá-lo ao User
         client = Client.objects.create(
             user=user,
             name=validated_data['name'],

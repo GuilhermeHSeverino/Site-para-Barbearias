@@ -1,35 +1,16 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+
+from app.permissoes import HasBarberProfile, IsBarberOrAdmin
+from schedule.models import Schedule
 from .models import Client, BarberClientNote
 from .serializers import ClientSerializer, BarberClientNoteSerializer
-from schedule.models import Schedule
-
-class IsBarber(permissions.BasePermission):
-    """
-    Custom permission to ensure the user is a barber.
-    """
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-        if request.user.is_staff:
-            return True
-        try:
-            _ = request.user.barber
-            return True
-        except AttributeError:
-            return False
-
-
-class TemPerfilDeBarbeiro(permissions.BasePermission):
-    """Notas e histórico são do barbeiro logado; um administrador sem perfil de barbeiro não tem os dele."""
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and hasattr(request.user, "barber"))
 
 
 class ClientCreateListView(generics.ListCreateAPIView):
     # dados pessoais dos clientes (e-mail e telefone) são só para a barbearia
-    permission_classes = [IsBarber]
+    permission_classes = [IsBarberOrAdmin]
     serializer_class = ClientSerializer
 
     def get_queryset(self):
@@ -40,42 +21,39 @@ class ClientCreateListView(generics.ListCreateAPIView):
         if barber_id:
             if not barber_id.isdigit():
                 raise ValidationError({"barber_id": "Informe um barbeiro válido."})
-            # Filter clients who have had at least one appointment with this barber
+            # clientes que já tiveram pelo menos um atendimento com esse barbeiro
             return queryset.filter(schedule__barber_id=barber_id).distinct()
 
         return queryset
 
 class ClientRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsBarber]
+    permission_classes = [IsBarberOrAdmin]
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
 class BarberClientNoteListView(generics.ListAPIView):
-    permission_classes = [TemPerfilDeBarbeiro]
+    permission_classes = [HasBarberProfile]
     serializer_class = BarberClientNoteSerializer
 
     def get_queryset(self):
         return BarberClientNote.objects.filter(barber=self.request.user.barber)
 
 class BarberClientNoteView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [TemPerfilDeBarbeiro]
+    permission_classes = [HasBarberProfile]
     serializer_class = BarberClientNoteSerializer
 
     def get_queryset(self):
         return BarberClientNote.objects.filter(barber=self.request.user.barber)
 
-    def perform_create(self, serializer):
-        serializer.save(barber=self.request.user.barber)
-
 class BarberClientNoteCreateView(generics.CreateAPIView):
-    permission_classes = [TemPerfilDeBarbeiro]
+    permission_classes = [HasBarberProfile]
     serializer_class = BarberClientNoteSerializer
 
     def perform_create(self, serializer):
         serializer.save(barber=self.request.user.barber)
 
 class ClientHistoryView(generics.ListAPIView):
-    permission_classes = [TemPerfilDeBarbeiro]
+    permission_classes = [HasBarberProfile]
 
     def get_queryset(self):
         client_id = self.kwargs.get('client_id')

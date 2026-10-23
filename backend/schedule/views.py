@@ -10,6 +10,8 @@ from .serializers import ScheduleSerializer
 from barber.models import Barber
 from client.models import Client
 from services.models import Services
+from calendar import monthrange
+from notifications.services import avisar_lista_de_espera, notify_barber, notify_client, remover_lembretes
 
 class ScheduleCreateListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -82,7 +84,6 @@ class ScheduleClientCancelView(APIView):
             return Response({"detail": "Este agendamento não pode mais ser cancelado."}, status=400)
         schedule.status = "cancelado"
         schedule.save(update_fields=["status"])
-        from notifications.services import notify_barber, remover_lembretes, avisar_lista_de_espera
         remover_lembretes(schedule)
         notify_barber(
             schedule.barber,
@@ -186,7 +187,6 @@ class VacationListCreateView(APIView):
         try:
             if request.data.get("month"):
                 # compatibilidade: bloqueio do mês inteiro
-                from calendar import monthrange
                 year, month_number = [int(value) for value in request.data["month"].split("-")]
                 start_date = datetime(year, month_number, 1).date()
                 end_date = datetime(year, month_number, monthrange(year, month_number)[1]).date()
@@ -211,7 +211,6 @@ class VacationListCreateView(APIView):
         afetados = Schedule.objects.filter(
             barber=barber, date__range=(start_date, end_date), status__in=["agendado", "confirmado"]
         ).select_related("client_name")
-        from notifications.services import notify_client
         for s in afetados:
             if s.client_name:
                 notify_client(
@@ -253,7 +252,6 @@ class WaitlistCreateView(APIView):
 
         entry, created = WaitlistEntry.objects.get_or_create(client=client, barber=barber, service=service, date=date_value)
         if created:
-            from notifications.services import notify_barber
             notify_barber(barber, f"{client.name} entrou na lista de espera para {service.name} em {date_value.strftime('%d/%m/%Y')}.")
         return Response({"id": entry.id, "status": entry.status}, status=201 if created else 200)
 

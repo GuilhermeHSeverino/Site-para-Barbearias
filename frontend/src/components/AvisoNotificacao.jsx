@@ -8,7 +8,9 @@ export default function AvisoNotificacao({ aviso, onAbrir, onFechar }) {
             <button className="aviso-notificacao-texto" onClick={onAbrir}>
                 <span aria-hidden="true">🔔</span> {aviso.message}
             </button>
-            <button className="aviso-notificacao-fechar" onClick={onFechar} aria-label="Fechar aviso">✕</button>
+            <button className="aviso-notificacao-fechar" onClick={onFechar} aria-label="Fechar aviso">
+                ✕
+            </button>
         </div>
     );
 }

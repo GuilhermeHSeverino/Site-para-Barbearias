@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 from .models import ClientNotification, Notification
+from schedule.models import Schedule, WaitlistEntry
 
 # antecedência dos lembretes de atendimento
 LEMBRETE_BARBEIRO_MINUTOS = 10
@@ -29,7 +30,6 @@ def _inicio(agendamento):
 
 
 def _proximos_atendimentos(filtro, agora, limite):
-    from schedule.models import Schedule
     candidatos = (
         Schedule.objects.filter(status__in=["agendado", "confirmado"], client_name__isnull=False,
                                 date__range=(agora.date(), limite.date()), **filtro)
@@ -73,7 +73,6 @@ def gerar_lembretes_cliente(client):
 
 def avisar_lista_de_espera(schedule):
     """Avisa quem aguarda vaga com o mesmo barbeiro, serviço e data quando um horário é liberado."""
-    from schedule.models import WaitlistEntry
     if schedule.service is None or schedule.date < timezone.localdate():
         return
     data = schedule.date.strftime('%d/%m/%Y')

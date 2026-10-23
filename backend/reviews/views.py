@@ -2,6 +2,7 @@ from rest_framework import generics
 from .models import Review
 from .serializers import ReviewSerializer
 from rest_framework.permissions import IsAuthenticated
+from notifications.services import notify_barber
 
 
 class ReviewCreateListView(generics.ListCreateAPIView):
@@ -11,7 +12,6 @@ class ReviewCreateListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         review = serializer.save()
-        from notifications.services import notify_barber
         # a avaliação é anônima: o aviso ao barbeiro não identifica o cliente
         notify_barber(review.barber, f"Nova avaliação recebida: nota {review.rating}/10.", "REVIEW")
 

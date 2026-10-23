@@ -19,7 +19,7 @@ export default function NotificacoesCliente() {
     const marcarComoLida = async (id) => {
         try {
             await api.patch(`/api/v1/client-notifications/${id}/`);
-            setNotificacoes((atuais) => atuais.map((item) => item.id === id ? { ...item, is_read: true } : item));
+            setNotificacoes((atuais) => atuais.map((item) => (item.id === id ? { ...item, is_read: true } : item)));
             avisarNotificacoesAtualizadas();
         } catch (error) {
             console.error("Erro ao marcar notificação:", error);
@@ -42,11 +42,26 @@ export default function NotificacoesCliente() {
         <div className="cliente-fluxo">
             <div className="cliente-fluxo-card">
                 <div className="cliente-fluxo-cabecalho">
-                    <div><h2>Seus avisos</h2><p>Lembretes de horário e avisos da barbearia. Toque em um aviso para marcá-lo como lido.</p></div>
-                    {naoLidas > 0 && <button className="cliente-fluxo-botao" onClick={marcarTodas}>Marcar todas como lidas</button>}
+                    <div>
+                        <h2>Seus avisos</h2>
+                        <p>Lembretes de horário e avisos da barbearia. Toque em um aviso para marcá-lo como lido.</p>
+                    </div>
+                    {naoLidas > 0 && (
+                        <button className="cliente-fluxo-botao" onClick={marcarTodas}>
+                            Marcar todas como lidas
+                        </button>
+                    )}
                 </div>
-                {erro && <p className="cliente-nota" style={{ color: "#f87171" }}>{erro}</p>}
-                {loading ? <p className="cliente-nota">Carregando notificações...</p> : notificacoes.length === 0 ? <div className="cliente-fluxo-vazio">Nenhuma notificação por enquanto.</div> : (
+                {erro && (
+                    <p className="cliente-nota" style={{ color: "#f87171" }}>
+                        {erro}
+                    </p>
+                )}
+                {loading ? (
+                    <p className="cliente-nota">Carregando notificações...</p>
+                ) : notificacoes.length === 0 ? (
+                    <div className="cliente-fluxo-vazio">Nenhuma notificação por enquanto.</div>
+                ) : (
                     <div className="cliente-agendamento-lista">
                         {notificacoes.map((item) => (
                             <button
@@ -56,7 +71,12 @@ export default function NotificacoesCliente() {
                             >
                                 <span>
                                     <strong>{item.message}</strong>
-                                    <small>{new Date(item.created_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</small>
+                                    <small>
+                                        {new Date(item.created_at).toLocaleString("pt-BR", {
+                                            dateStyle: "short",
+                                            timeStyle: "short",
+                                        })}
+                                    </small>
                                 </span>
                                 {!item.is_read && <span className="cliente-status concluido">Nova</span>}
                             </button>

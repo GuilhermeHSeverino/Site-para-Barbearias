@@ -55,14 +55,9 @@ export default function BarberLayout({ children }) {
 
     return (
         <div className="barber-layout">
-
             {/* TOPBAR (só aparece no mobile/tablet) */}
             <div className="barber-topbar">
-                <button
-                    className="botao-hamburguer"
-                    onClick={() => setMenuAberto(true)}
-                    aria-label="Abrir menu"
-                >
+                <button className="botao-hamburguer" onClick={() => setMenuAberto(true)} aria-label="Abrir menu">
                     ☰
                 </button>
                 <span className="topbar-logo">💈 Barbearia</span>
@@ -70,19 +65,13 @@ export default function BarberLayout({ children }) {
             </div>
 
             {/* BACKDROP (mobile, quando o menu está aberto) */}
-            {menuAberto && (
-                <div className="sidebar-backdrop" onClick={() => setMenuAberto(false)} />
-            )}
+            {menuAberto && <div className="sidebar-backdrop" onClick={() => setMenuAberto(false)} />}
 
             {/* SIDEBAR */}
             <aside className={`barber-sidebar ${menuAberto ? "aberta" : ""}`}>
                 <div className="sidebar-topo">
                     <span className="sidebar-logo">💈 Barbearia</span>
-                    <button
-                        className="botao-fechar"
-                        onClick={() => setMenuAberto(false)}
-                        aria-label="Fechar menu"
-                    >
+                    <button className="botao-fechar" onClick={() => setMenuAberto(false)} aria-label="Fechar menu">
                         ✕
                     </button>
                 </div>
@@ -111,9 +100,7 @@ export default function BarberLayout({ children }) {
                         onClick={() => irPara("/barbeiro/configuracoes")}
                         title="Abrir meu perfil"
                     >
-                        <span className="usuario-avatar">
-                            {(perfil?.name || email || "?")[0].toUpperCase()}
-                        </span>
+                        <span className="usuario-avatar">{(perfil?.name || email || "?")[0].toUpperCase()}</span>
                         <span className="usuario-dados">
                             <strong>{perfil?.name || "Meu perfil"}</strong>
                             <small>{email}</small>
@@ -125,13 +112,17 @@ export default function BarberLayout({ children }) {
                 </div>
             </aside>
 
-            <AvisoNotificacao aviso={aviso} onFechar={fecharAviso} onAbrir={() => { fecharAviso(); navigate("/barbeiro/notificacoes"); }} />
+            <AvisoNotificacao
+                aviso={aviso}
+                onFechar={fecharAviso}
+                onAbrir={() => {
+                    fecharAviso();
+                    navigate("/barbeiro/notificacoes");
+                }}
+            />
 
             {/* CONTEÚDO */}
-            <main className="barber-conteudo">
-                {children}
-            </main>
-
+            <main className="barber-conteudo">{children}</main>
         </div>
     );
 }

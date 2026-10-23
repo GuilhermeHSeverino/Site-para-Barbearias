@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Stock, StockMovement
 from barber.models import Barber
 from finance.services import registrar_compra_de_produto
+from notifications.services import avisar_estoque_baixo
 
 class StockSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
@@ -44,7 +45,6 @@ class StockMovementSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             movimento = super().create(validated_data)
             if movimento.type == "saida":
-                from notifications.services import avisar_estoque_baixo
                 avisar_estoque_baixo(barbeiro, Stock.objects.select_related("product").get(product=movimento.product))
             if custo_total:
                 registrar_compra_de_produto(movimento.product, movimento.quantity, custo_total, barbeiro)

@@ -35,7 +35,7 @@ class Schedule(models.Model):
                 end_time = start_time + timedelta(minutes=duration)
                 self.end_time = (datetime.min + end_time).time()
             else:
-                # Default duration for blocked hours (e.g., 30 min)
+                # bloqueio sem serviço: 30 minutos
                 start_time = timedelta(hours=self.start_time.hour, minutes=self.start_time.minute)
                 end_time = start_time + timedelta(minutes=30)
                 self.end_time = (datetime.min + end_time).time()

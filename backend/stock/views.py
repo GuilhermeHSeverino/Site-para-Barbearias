@@ -4,19 +4,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import StockMovement, Stock
 from .serializers import StockSerializer, StockMovementSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser, BasePermission
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from products.models import Product
-from notifications.models import Notification
-from barber.models import Barber
 
-
-class IsBarberOrAdmin(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and (
-            request.user.is_staff or Barber.objects.filter(user=request.user).exists()
-        ))
+from app.permissoes import IsBarberOrAdmin
 
 class StockCreateListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly,]
@@ -44,7 +35,7 @@ class StockAlertView(generics.GenericAPIView):
     permission_classes = [IsBarberOrAdmin]
 
     def get(self, request):
-        # Retorna produtos onde a quantidade em estoque é menor ou igual ao estoque mínimo
+        # produtos que chegaram ao estoque mínimo
         alerts = Stock.objects.filter(
             quantity__lte=F('product__estoque_minimo')
         ).select_related('product')

@@ -22,12 +22,9 @@ class BarberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BarberSerializer
 
 class BarberProfileUpdateView(generics.RetrieveUpdateAPIView):
-    """
-    Permite que o barbeiro autenticado atualize seu próprio perfil.
-    """
+    """O barbeiro logado consulta e altera o próprio perfil (dados, bio e horários)."""
     permission_classes = [IsAuthenticated]
     serializer_class = BarberSerializer
 
     def get_object(self):
-        # Busca o perfil do barbeiro associado ao usuário autenticado
         return get_object_or_404(Barber, user=self.request.user)

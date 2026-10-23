@@ -66,7 +66,6 @@ function AgendaBarbeiro() {
     const [acaoAgendamento, setAcaoAgendamento] = useState(null); // { id, tipo: 'concluir' | 'cancelar' | 'desbloquear' }
     const [formaPagamento, setFormaPagamento] = useState("dinheiro");
 
-
     const barberId = (() => {
         try {
             const token = localStorage.getItem(ACCESS_TOKEN);
@@ -121,10 +120,7 @@ function AgendaBarbeiro() {
 
     const getAgendamentoPorHorario = (hora) => {
         return agendamentos.find(
-            (ag) =>
-                ag.date === diaSelecionado &&
-                ag.start_time.slice(0, 5) === hora &&
-                ag.status !== "cancelado"
+            (ag) => ag.date === diaSelecionado && ag.start_time.slice(0, 5) === hora && ag.status !== "cancelado",
         );
     };
 
@@ -212,7 +208,9 @@ function AgendaBarbeiro() {
             const res = await api.post("/api/v1/schedule/vacations/", { start_date: folgaInicio, end_date: folgaFim });
             const qtd = res.data.agendamentos_no_periodo;
             if (qtd > 0) {
-                alert(`Período bloqueado. Atenção: você já tem ${qtd} agendamento(s) nesse período; cancele ou remarque com os clientes.`);
+                alert(
+                    `Período bloqueado. Atenção: você já tem ${qtd} agendamento(s) nesse período; cancele ou remarque com os clientes.`,
+                );
             }
             await carregarTudo();
         } catch (err) {
@@ -234,17 +232,12 @@ function AgendaBarbeiro() {
 
     const clientesFiltrados = clientes.filter((c) => {
         const termo = buscaCliente.toLowerCase();
-        return (
-            c.name?.toLowerCase().includes(termo) ||
-            c.phone?.toLowerCase().includes(termo)
-        );
+        return c.name?.toLowerCase().includes(termo) || c.phone?.toLowerCase().includes(termo);
     });
 
-    const gerarEmailFallback = (phone) =>
-        `cliente${phone.replace(/\D/g, "")}@barbearia.local`;
+    const gerarEmailFallback = (phone) => `cliente${phone.replace(/\D/g, "")}@barbearia.local`;
 
-    const gerarSenhaAleatoria = () =>
-        Math.random().toString(36).slice(-10) + "Aa1!";
+    const gerarSenhaAleatoria = () => Math.random().toString(36).slice(-10) + "Aa1!";
 
     const criarClienteRapido = async () => {
         if (!novoCliente.name || !novoCliente.phone) {
@@ -311,16 +304,18 @@ function AgendaBarbeiro() {
 
                 const slotsToBlock = HORARIOS.slice(startIdx, endIdx + 1);
 
-                await Promise.all(slotsToBlock.map(hora =>
-                    api.post("/api/v1/schedule/", {
-                        barber: barberId,
-                        client_name: null,
-                        service: null,
-                        date: diaSelecionado,
-                        start_time: hora,
-                        status: "bloqueado",
-                    })
-                ));
+                await Promise.all(
+                    slotsToBlock.map((hora) =>
+                        api.post("/api/v1/schedule/", {
+                            barber: barberId,
+                            client_name: null,
+                            service: null,
+                            date: diaSelecionado,
+                            start_time: hora,
+                            status: "bloqueado",
+                        }),
+                    ),
+                );
             } else {
                 await api.post("/api/v1/schedule/", {
                     barber: barberId,
@@ -344,31 +339,31 @@ function AgendaBarbeiro() {
 
     return (
         <div className="agenda-container">
-            <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ marginBottom: "32px", display: "flex", alignItems: "center", gap: "20px" }}>
                 <button
                     className="btn-voltar"
                     onClick={() => navigate("/barbeiro/")}
                     style={{
-                        background: 'none',
-                        border: '1px solid #2a2a2a',
-                        color: '#9ca3af',
-                        padding: '10px',
-                        borderRadius: '10px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        transition: '0.2s'
+                        background: "none",
+                        border: "1px solid #2a2a2a",
+                        color: "#9ca3af",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        transition: "0.2s",
                     }}
-                    onMouseEnter={(e) => e.target.style.color = 'white'}
-                    onMouseLeave={(e) => e.target.style.color = '#9ca3af'}
+                    onMouseEnter={(e) => (e.target.style.color = "white")}
+                    onMouseLeave={(e) => (e.target.style.color = "#9ca3af")}
                 >
                     ← Voltar
                 </button>
                 <div>
-                    <h1 style={{ fontSize: '30px', fontWeight: '700', margin: 0, color: 'white' }}>
+                    <h1 style={{ fontSize: "30px", fontWeight: "700", margin: 0, color: "white" }}>
                         Agenda de Atendimentos 📅
                     </h1>
-                    <p style={{ color: '#9ca3af', fontSize: '15px', margin: '4px 0 0 0' }}>
+                    <p style={{ color: "#9ca3af", fontSize: "15px", margin: "4px 0 0 0" }}>
                         Gerencie seus horários e clientes.
                     </p>
                 </div>
@@ -428,9 +423,7 @@ function AgendaBarbeiro() {
                                                 <p>{ag.service_name}</p>
                                             </div>
 
-                                            <span className={`agenda-badge ${info.classe}`}>
-                                                {info.label}
-                                            </span>
+                                            <span className={`agenda-badge ${info.classe}`}>{info.label}</span>
 
                                             {ag.status === "agendado" && (
                                                 <div className="agenda-slot-acoes">
@@ -469,36 +462,90 @@ function AgendaBarbeiro() {
                 )}
             </div>
 
-            {listaEspera.length > 0 && <div className="agenda-timeline-card" style={{ marginTop: "20px" }}>
-                <h2 style={{ color: "white", fontSize: "19px", margin: "0 0 14px" }}>Lista de espera</h2>
-                <div className="lista-sugestoes">{listaEspera.map((item) => <div className="sugestao-item" key={item.id}><strong>{item.client}</strong><span>{item.service} · {new Date(`${item.date}T12:00:00`).toLocaleDateString("pt-BR")}</span></div>)}</div>
-            </div>}
+            {listaEspera.length > 0 && (
+                <div className="agenda-timeline-card" style={{ marginTop: "20px" }}>
+                    <h2 style={{ color: "white", fontSize: "19px", margin: "0 0 14px" }}>Lista de espera</h2>
+                    <div className="lista-sugestoes">
+                        {listaEspera.map((item) => (
+                            <div className="sugestao-item" key={item.id}>
+                                <strong>{item.client}</strong>
+                                <span>
+                                    {item.service} · {new Date(`${item.date}T12:00:00`).toLocaleDateString("pt-BR")}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {feriasModalAberto && (
                 <div className="modal-backdrop" onClick={() => setFeriasModalAberto(false)}>
                     <div className="modal-card pequeno" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Folgas e férias</h2>
-                            <button className="modal-fechar" onClick={() => setFeriasModalAberto(false)}>✕</button>
+                            <button className="modal-fechar" onClick={() => setFeriasModalAberto(false)}>
+                                ✕
+                            </button>
                         </div>
-                        <p className="modal-data-info">Os dias bloqueados ficam indisponíveis para novos agendamentos. Para bloquear um único dia, use a mesma data em "De" e "Até".</p>
+                        <p className="modal-data-info">
+                            Os dias bloqueados ficam indisponíveis para novos agendamentos. Para bloquear um único dia,
+                            use a mesma data em "De" e "Até".
+                        </p>
                         <div className="folga-datas">
                             <div>
-                                <label className="modal-label" htmlFor="folga-inicio">De</label>
-                                <input id="folga-inicio" className="modal-input" type="date" min={dataLocal()} value={folgaInicio}
-                                    onChange={(e) => { setFolgaInicio(e.target.value); if (!folgaFim || e.target.value > folgaFim) setFolgaFim(e.target.value); }} />
+                                <label className="modal-label" htmlFor="folga-inicio">
+                                    De
+                                </label>
+                                <input
+                                    id="folga-inicio"
+                                    className="modal-input"
+                                    type="date"
+                                    min={dataLocal()}
+                                    value={folgaInicio}
+                                    onChange={(e) => {
+                                        setFolgaInicio(e.target.value);
+                                        if (!folgaFim || e.target.value > folgaFim) setFolgaFim(e.target.value);
+                                    }}
+                                />
                             </div>
                             <div>
-                                <label className="modal-label" htmlFor="folga-fim">Até</label>
-                                <input id="folga-fim" className="modal-input" type="date" min={folgaInicio || dataLocal()} value={folgaFim} onChange={(e) => setFolgaFim(e.target.value)} />
+                                <label className="modal-label" htmlFor="folga-fim">
+                                    Até
+                                </label>
+                                <input
+                                    id="folga-fim"
+                                    className="modal-input"
+                                    type="date"
+                                    min={folgaInicio || dataLocal()}
+                                    value={folgaFim}
+                                    onChange={(e) => setFolgaFim(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="folga-atalhos">
-                            <button type="button" onClick={() => { setFolgaInicio(diaSelecionado); setFolgaFim(diaSelecionado); }}>Só {formatarData(diaSelecionado)}</button>
-                            <button type="button" onClick={usarMesInteiro}>Mês inteiro</button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setFolgaInicio(diaSelecionado);
+                                    setFolgaFim(diaSelecionado);
+                                }}
+                            >
+                                Só {formatarData(diaSelecionado)}
+                            </button>
+                            <button type="button" onClick={usarMesInteiro}>
+                                Mês inteiro
+                            </button>
                         </div>
-                        <button className="modal-confirmar" onClick={bloquearFolga} disabled={salvandoFerias || !folgaInicio || !folgaFim}>
-                            {salvandoFerias ? "Bloqueando..." : folgaInicio === folgaFim ? `Bloquear ${formatarData(folgaInicio || diaSelecionado)}` : "Bloquear período"}
+                        <button
+                            className="modal-confirmar"
+                            onClick={bloquearFolga}
+                            disabled={salvandoFerias || !folgaInicio || !folgaFim}
+                        >
+                            {salvandoFerias
+                                ? "Bloqueando..."
+                                : folgaInicio === folgaFim
+                                  ? `Bloquear ${formatarData(folgaInicio || diaSelecionado)}`
+                                  : "Bloquear período"}
                         </button>
 
                         <h3 className="folga-titulo">Bloqueios programados</h3>
@@ -508,7 +555,11 @@ function AgendaBarbeiro() {
                             <ul className="folga-lista">
                                 {folgas.map((f) => (
                                     <li key={f.id}>
-                                        <span>{f.start_date === f.end_date ? formatarData(f.start_date) : `${formatarData(f.start_date)} a ${formatarData(f.end_date)}`}</span>
+                                        <span>
+                                            {f.start_date === f.end_date
+                                                ? formatarData(f.start_date)
+                                                : `${formatarData(f.start_date)} a ${formatarData(f.end_date)}`}
+                                        </span>
                                         <button onClick={() => removerFolga(f.id)}>Remover</button>
                                     </li>
                                 ))}
@@ -523,21 +574,37 @@ function AgendaBarbeiro() {
                 <div className="modal-backdrop" onClick={() => setModalAberto(false)}>
                     <div className="modal-card" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 {isBloqueio ? "Bloquear Horário" : "Novo agendamento"}
                             </h2>
-                            <button className="modal-fechar" onClick={() => setModalAberto(false)}>✕</button>
+                            <button className="modal-fechar" onClick={() => setModalAberto(false)}>
+                                ✕
+                            </button>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', padding: '10px', backgroundColor: '#121212', borderRadius: '8px', border: '1px solid #2a2a2a' }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                marginBottom: "20px",
+                                padding: "10px",
+                                backgroundColor: "#121212",
+                                borderRadius: "8px",
+                                border: "1px solid #2a2a2a",
+                            }}
+                        >
                             <input
                                 type="checkbox"
                                 id="bloqueio"
                                 checked={isBloqueio}
                                 onChange={(e) => setIsBloqueio(e.target.checked)}
-                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                style={{ width: "18px", height: "18px", cursor: "pointer" }}
                             />
-                            <label htmlFor="bloqueio" style={{ color: 'white', fontSize: '14px', cursor: 'pointer', userSelect: 'none' }}>
+                            <label
+                                htmlFor="bloqueio"
+                                style={{ color: "white", fontSize: "14px", cursor: "pointer", userSelect: "none" }}
+                            >
                                 Bloquear este horário (Uso Pessoal)
                             </label>
                         </div>
@@ -584,10 +651,7 @@ function AgendaBarbeiro() {
                                     </div>
                                 )}
 
-                                <button
-                                    className="link-cadastrar-cliente"
-                                    onClick={() => setCriandoCliente(true)}
-                                >
+                                <button className="link-cadastrar-cliente" onClick={() => setCriandoCliente(true)}>
                                     + Cadastrar novo cliente
                                 </button>
                             </>
@@ -617,10 +681,7 @@ function AgendaBarbeiro() {
                                     onChange={(e) => setNovoCliente({ ...novoCliente, email: e.target.value })}
                                 />
 
-                                <button
-                                    className="link-cadastrar-cliente"
-                                    onClick={() => setCriandoCliente(false)}
-                                >
+                                <button className="link-cadastrar-cliente" onClick={() => setCriandoCliente(false)}>
                                     ← Buscar cliente já cadastrado
                                 </button>
                             </>
@@ -650,7 +711,9 @@ function AgendaBarbeiro() {
                                 >
                                     <option value="">Selecione o início</option>
                                     {HORARIOS.map((h) => (
-                                        <option key={h} value={h}>{h}</option>
+                                        <option key={h} value={h}>
+                                            {h}
+                                        </option>
                                     ))}
                                 </select>
 
@@ -662,7 +725,9 @@ function AgendaBarbeiro() {
                                 >
                                     <option value="">Selecione o fim</option>
                                     {HORARIOS.map((h) => (
-                                        <option key={h} value={h}>{h}</option>
+                                        <option key={h} value={h}>
+                                            {h}
+                                        </option>
                                     ))}
                                 </select>
                             </>
@@ -676,17 +741,15 @@ function AgendaBarbeiro() {
                                 >
                                     <option value="">Selecione o horário</option>
                                     {HORARIOS.map((h) => (
-                                        <option key={h} value={h}>{h}</option>
+                                        <option key={h} value={h}>
+                                            {h}
+                                        </option>
                                     ))}
                                 </select>
                             </>
                         )}
 
-                        <button
-                            className="modal-confirmar"
-                            onClick={confirmarNovoAgendamento}
-                            disabled={salvando}
-                        >
+                        <button className="modal-confirmar" onClick={confirmarNovoAgendamento} disabled={salvando}>
                             {salvando ? "Agendando..." : "Confirmar agendamento"}
                         </button>
                     </div>
@@ -707,7 +770,9 @@ function AgendaBarbeiro() {
                                     onChange={(e) => setFormaPagamento(e.target.value)}
                                 >
                                     {PAGAMENTOS.map((p) => (
-                                        <option key={p.value} value={p.value}>{p.label}</option>
+                                        <option key={p.value} value={p.value}>
+                                            {p.label}
+                                        </option>
                                     ))}
                                 </select>
 
@@ -718,7 +783,9 @@ function AgendaBarbeiro() {
                         ) : acaoAgendamento.tipo === "desbloquear" ? (
                             <>
                                 <h2>Desbloquear horário?</h2>
-                                <p className="modal-data-info">Este horário voltará a ficar disponível para agendamentos.</p>
+                                <p className="modal-data-info">
+                                    Este horário voltará a ficar disponível para agendamentos.
+                                </p>
                                 <button className="modal-confirmar perigo" onClick={confirmarAcao}>
                                     Confirmar desbloqueio
                                 </button>
@@ -733,16 +800,12 @@ function AgendaBarbeiro() {
                             </>
                         )}
 
-                        <button
-                            className="btn-voltar modal-voltar"
-                            onClick={() => setAcaoAgendamento(null)}
-                        >
+                        <button className="btn-voltar modal-voltar" onClick={() => setAcaoAgendamento(null)}>
                             ← Voltar
                         </button>
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

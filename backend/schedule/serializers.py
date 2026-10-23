@@ -9,6 +9,7 @@ from .models import Schedule, Vacation, INTERVALO_ENTRE_ATENDIMENTOS_MIN
 from client.models import Client
 from barber.models import Barber
 from finance.models import Finances
+from notifications.services import avisar_lista_de_espera, notify_barber, notify_client, remover_lembretes
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
@@ -84,11 +85,11 @@ class ScheduleSerializer(serializers.ModelSerializer):
         return data
 
     def _verificar_horario(self, barber, date, start_time, service, instance=None):
-        # Calculate duration based on service or a default for blocked hours
+        # bloqueio sem serviço ocupa 30 minutos
         if service:
             duration = service.duration.total_seconds() / 60
         else:
-            duration = 30  # Default 30 min for blocked hours
+            duration = 30
 
         start_time_obj = timedelta(hours=start_time.hour, minutes=start_time.minute)
         end_time_obj = start_time_obj + timedelta(minutes=duration)
@@ -129,7 +130,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
         Barber.objects.select_for_update().get(pk=barber.pk)
         self._verificar_horario(barber, date, start_time, service, instance)
 
-    # 🔥 CREATE — agora aceita agendamento manual do barbeiro
     def create(self, validated_data):
         validated_data.pop('payment_method', None)
 
@@ -140,11 +140,11 @@ class ScheduleSerializer(serializers.ModelSerializer):
         status = validated_data.get('status', 'agendado')
 
         if is_barber:
-            # Allow missing client_name only if status is 'bloqueado'
+            # o barbeiro escolhe o cliente; só o bloqueio de horário fica sem cliente
             if status != 'bloqueado' and not validated_data.get('client_name'):
                 raise serializers.ValidationError({"client_name": "Selecione um cliente."})
         else:
-            # Cliente só pode agendar pra si mesmo
+            # o cliente só agenda para si mesmo
             client = Client.objects.filter(user=user).first()
             if not client:
                 raise serializers.ValidationError({"detail": "Esta conta não possui um perfil de cliente."})
@@ -155,7 +155,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
                                 validated_data.get('service'))
             schedule = super().create(validated_data)
 
-        from notifications.services import notify_barber, notify_client
         data_agendamento = schedule.date.strftime('%d/%m/%Y')
         horario_agendamento = schedule.start_time.strftime('%H:%M')
         servico_nome = schedule.service.name if schedule.service else 'bloqueio de agenda'
@@ -170,7 +169,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
                     f"Novo agendamento: {schedule.client_name.name} marcou {servico_nome} em {data_agendamento} às {horario_agendamento}.",
                 )
 
-        # Only send email if there is a client
         if schedule.client_name:
             send_mail(
                 subject="Confirmação de Agendamento",
@@ -190,7 +188,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
         return schedule
 
-    # 🔥 UPDATE — agora captura forma de pagamento ao concluir
     def update(self, instance, validated_data):
         old_status = instance.status
         payment_method = validated_data.pop('payment_method', None)
@@ -216,19 +213,16 @@ class ScheduleSerializer(serializers.ModelSerializer):
             )
 
             if instance.client_name:
-                from notifications.services import notify_client
                 notify_client(
                     instance.client_name,
                     f"Seu atendimento com {instance.barber.name} foi concluído. Avalie sua experiência.",
                 )
 
         if instance.status == "cancelado" and old_status != "cancelado":
-            from notifications.services import remover_lembretes, avisar_lista_de_espera
             remover_lembretes(instance)
             avisar_lista_de_espera(instance)
 
         if instance.status == "cancelado" and old_status != "cancelado" and instance.client_name:
-            from notifications.services import notify_client
             notify_client(
                 instance.client_name,
                 f"Seu agendamento com {instance.barber.name} em {instance.date.strftime('%d/%m/%Y')} foi cancelado pelo barbeiro.",

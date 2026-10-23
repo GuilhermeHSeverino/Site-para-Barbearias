@@ -102,14 +102,14 @@ export default function FinancasBarbeiro() {
                 saldoRes.data.map((i) => ({
                     date: new Date(i.date).toLocaleDateString("pt-BR"),
                     saldo: i.saldo_acumulado,
-                }))
+                })),
             );
 
             setBarras(
                 Object.keys(mapaDias).map((dia) => ({
                     dia,
                     valor: mapaDias[dia],
-                }))
+                })),
             );
 
             setPorPagamento(
@@ -119,13 +119,13 @@ export default function FinancasBarbeiro() {
                         label: LABELS_PAGAMENTO[metodo] || "Não informado",
                         valor: mapaPagamento[metodo],
                     }))
-                    .sort((a, b) => b.valor - a.valor)
+                    .sort((a, b) => b.valor - a.valor),
             );
 
             setPorServico(
                 Object.keys(mapaServico)
                     .map((nome) => ({ name: nome, value: mapaServico[nome] }))
-                    .sort((a, b) => b.value - a.value)
+                    .sort((a, b) => b.value - a.value),
             );
         } catch (err) {
             console.error(err);
@@ -135,17 +135,15 @@ export default function FinancasBarbeiro() {
         }
     };
 
-    const formatar = (v) =>
-        v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const formatar = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
     const totalCortes = porServico.reduce((acc, s) => acc + s.value, 0);
 
     return (
         <div className="financeiro-container">
-
             {/* HEADER */}
             <div className="financeiro-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                     <button className="btn-voltar" onClick={() => navigate("/barbeiro/")}>
                         ← Voltar
                     </button>
@@ -190,7 +188,6 @@ export default function FinancasBarbeiro() {
 
             {/* GRÁFICOS */}
             <div className="graficos">
-
                 <div className="grafico">
                     <p>Evolução</p>
                     {carregando ? (
@@ -201,9 +198,7 @@ export default function FinancasBarbeiro() {
                                 <CartesianGrid stroke="#2a2a2a" />
                                 <XAxis dataKey="date" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" />
-                                <Tooltip
-                                    contentStyle={{ background: "#17181a", border: "1px solid #303030" }}
-                                />
+                                <Tooltip contentStyle={{ background: "#17181a", border: "1px solid #303030" }} />
                                 <Line dataKey="saldo" stroke="#22c55e" strokeWidth={2} dot={false} />
                             </LineChart>
                         </ResponsiveContainer>
@@ -220,20 +215,16 @@ export default function FinancasBarbeiro() {
                                 <CartesianGrid stroke="#2a2a2a" />
                                 <XAxis dataKey="dia" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" />
-                                <Tooltip
-                                    contentStyle={{ background: "#17181a", border: "1px solid #303030" }}
-                                />
+                                <Tooltip contentStyle={{ background: "#17181a", border: "1px solid #303030" }} />
                                 <Bar dataKey="valor" fill="#22c55e" radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     )}
                 </div>
-
             </div>
 
             {/* SERVIÇOS MAIS REALIZADOS (PIZZA) + FORMAS DE PAGAMENTO */}
             <div className="graficos">
-
                 <div className="grafico">
                     <p>Tipos de corte no período ({totalCortes} no total)</p>
                     {carregando ? (
@@ -261,9 +252,7 @@ export default function FinancasBarbeiro() {
                                     contentStyle={{ background: "#17181a", border: "1px solid #303030" }}
                                     formatter={(value, name) => [`${value} corte(s)`, name]}
                                 />
-                                <Legend
-                                    wrapperStyle={{ fontSize: 13, color: "#9ca3af" }}
-                                />
+                                <Legend wrapperStyle={{ fontSize: 13, color: "#9ca3af" }} />
                             </PieChart>
                         </ResponsiveContainer>
                     )}
@@ -298,7 +287,6 @@ export default function FinancasBarbeiro() {
                         </div>
                     )}
                 </div>
-
             </div>
 
             {/* HISTÓRICO */}
@@ -310,26 +298,28 @@ export default function FinancasBarbeiro() {
                 ) : financas.length === 0 ? (
                     <p className="estado-msg">Nenhuma movimentação encontrada.</p>
                 ) : (
-                    [...financas].reverse().slice(0, visiveis).map((f) => (
-                        <div key={f.id} className="item">
-                            <div>
-                                <p>{new Date(f.date).toLocaleDateString()}</p>
-                                <small>{f.descricao}</small>
+                    [...financas]
+                        .reverse()
+                        .slice(0, visiveis)
+                        .map((f) => (
+                            <div key={f.id} className="item">
+                                <div>
+                                    <p>{new Date(f.date).toLocaleDateString()}</p>
+                                    <small>{f.descricao}</small>
+                                </div>
+
+                                <span className="item-pagamento">
+                                    {f.payment_method ? LABELS_PAGAMENTO[f.payment_method] : "—"}
+                                </span>
+
+                                <p className={f.tipo === "entrada" ? "green" : "red"}>
+                                    {formatar(parseFloat(f.valor))}
+                                </p>
                             </div>
-
-                            <span className="item-pagamento">
-                                {f.payment_method ? LABELS_PAGAMENTO[f.payment_method] : "—"}
-                            </span>
-
-                            <p className={f.tipo === "entrada" ? "green" : "red"}>
-                                {formatar(parseFloat(f.valor))}
-                            </p>
-                        </div>
-                    ))
+                        ))
                 )}
                 <MostrarMais total={financas.length} visiveis={visiveis} onMostrar={setVisiveis} />
             </div>
-
         </div>
     );
 }

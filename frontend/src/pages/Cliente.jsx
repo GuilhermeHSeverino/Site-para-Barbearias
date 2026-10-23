@@ -3,11 +3,10 @@ import ClienteLayout from "../components/cliente/ClienteLayout";
 
 function Cliente() {
     return (
-
         <ClienteLayout>
             <MenuCliente />
         </ClienteLayout>
-    )
+    );
 }
 
 export default Cliente;

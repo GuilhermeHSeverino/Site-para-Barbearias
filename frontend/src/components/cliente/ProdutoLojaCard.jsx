@@ -1,12 +1,6 @@
 import { formatarMoeda, obterInicial } from "../../utils/formatters";
 
-export default function ProdutoLojaCard({
-    produto,
-    quantidade,
-    comprando,
-    onQuantidadeChange,
-    onComprar,
-}) {
+export default function ProdutoLojaCard({ produto, quantidade, comprando, onQuantidadeChange, onComprar }) {
     const produtoId = produto.product;
     const estaComprando = comprando === produtoId;
 

@@ -21,7 +21,9 @@ export default function ClienteLayout({ children }) {
     const [menuAberto, setMenuAberto] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo("/api/v1/client-notifications/");
+    const { naoLidas, aviso, fecharAviso, permissao, pedirPermissao } = useNotificacoesAoVivo(
+        "/api/v1/client-notifications/",
+    );
     const token = localStorage.getItem(ACCESS_TOKEN);
     let email = "";
 
@@ -45,9 +47,17 @@ export default function ClienteLayout({ children }) {
     return (
         <div className="cliente-layout">
             <div className="cliente-topbar">
-                <button className="cliente-menu-botao" onClick={() => setMenuAberto(true)} aria-label="Abrir menu">☰</button>
+                <button className="cliente-menu-botao" onClick={() => setMenuAberto(true)} aria-label="Abrir menu">
+                    ☰
+                </button>
                 <span className="cliente-logo">💈 Barbearia</span>
-                <IconeNotificacoes naoLidas={naoLidas} onClick={() => { fecharAviso(); irPara("/cliente/notificacoes"); }} />
+                <IconeNotificacoes
+                    naoLidas={naoLidas}
+                    onClick={() => {
+                        fecharAviso();
+                        irPara("/cliente/notificacoes");
+                    }}
+                />
             </div>
 
             {menuAberto && <div className="cliente-backdrop" onClick={() => setMenuAberto(false)} />}
@@ -55,7 +65,9 @@ export default function ClienteLayout({ children }) {
             <aside className={`cliente-sidebar ${menuAberto ? "aberta" : ""}`}>
                 <div className="cliente-sidebar-topo">
                     <span className="cliente-logo">💈 Barbearia</span>
-                    <button className="cliente-fechar" onClick={() => setMenuAberto(false)} aria-label="Fechar menu">✕</button>
+                    <button className="cliente-fechar" onClick={() => setMenuAberto(false)} aria-label="Fechar menu">
+                        ✕
+                    </button>
                 </div>
 
                 <nav className="cliente-nav">
@@ -74,18 +86,27 @@ export default function ClienteLayout({ children }) {
 
                 <div className="cliente-sidebar-rodape">
                     <BotaoAtivarAvisos permissao={permissao} onAtivar={pedirPermissao} />
-                    <button className="cliente-identidade" onClick={() => irPara("/cliente") } title="Voltar ao início">
+                    <button className="cliente-identidade" onClick={() => irPara("/cliente")} title="Voltar ao início">
                         <span className="cliente-avatar">{email ? email[0].toUpperCase() : "C"}</span>
                         <span className="cliente-identidade-texto">
                             <strong>Minha conta</strong>
                             <small>{email || "Cliente"}</small>
                         </span>
                     </button>
-                    <button className="cliente-sair" onClick={sair}>Sair</button>
+                    <button className="cliente-sair" onClick={sair}>
+                        Sair
+                    </button>
                 </div>
             </aside>
 
-            <AvisoNotificacao aviso={aviso} onFechar={fecharAviso} onAbrir={() => { fecharAviso(); navigate("/cliente/notificacoes"); }} />
+            <AvisoNotificacao
+                aviso={aviso}
+                onFechar={fecharAviso}
+                onAbrir={() => {
+                    fecharAviso();
+                    navigate("/cliente/notificacoes");
+                }}
+            />
 
             <main className="cliente-conteudo">
                 {location.pathname !== "/cliente" && (
