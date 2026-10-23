@@ -71,6 +71,21 @@ def gerar_lembretes_cliente(client):
         )
 
 
+def avisar_lista_de_espera(schedule):
+    """Avisa quem aguarda vaga com o mesmo barbeiro, serviço e data quando um horário é liberado."""
+    from schedule.models import WaitlistEntry
+    if schedule.service is None or schedule.date < timezone.localdate():
+        return
+    data = schedule.date.strftime('%d/%m/%Y')
+    entries = WaitlistEntry.objects.filter(barber=schedule.barber, service=schedule.service, date=schedule.date,
+                                           status="pending").select_related("client")
+    for entry in entries:
+        notify_client(entry.client, f"Surgiu uma possibilidade de horário com {schedule.barber.name} em {data}. Confira a agenda.")
+        notify_barber(schedule.barber, f"A lista de espera tem um cliente interessado em {data}.")
+        entry.status = "notified"
+        entry.save(update_fields=["status"])
+
+
 def remover_lembretes(schedule):
     """Apaga os lembretes de um atendimento cancelado, para não avisar de um horário que não existe mais."""
     schedule.lembretes_cliente.all().delete()

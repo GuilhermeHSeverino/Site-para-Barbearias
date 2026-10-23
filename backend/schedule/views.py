@@ -76,18 +76,13 @@ class ScheduleClientCancelView(APIView):
             return Response({"detail": "Este agendamento não pode mais ser cancelado."}, status=400)
         schedule.status = "cancelado"
         schedule.save(update_fields=["status"])
-        from notifications.services import notify_barber, notify_client, remover_lembretes
+        from notifications.services import notify_barber, remover_lembretes, avisar_lista_de_espera
         remover_lembretes(schedule)
         notify_barber(
             schedule.barber,
             f"Agendamento cancelado pelo cliente {client.name}: {schedule.date.strftime('%d/%m/%Y')} às {schedule.start_time.strftime('%H:%M')}.",
         )
-        entries = WaitlistEntry.objects.filter(barber=schedule.barber, service=schedule.service, date=schedule.date, status="pending").select_related("client")
-        for entry in entries:
-            notify_client(entry.client, f"Surgiu uma possibilidade de horário com {schedule.barber.name} em {schedule.date.strftime('%d/%m/%Y')}. Confira a agenda.")
-            notify_barber(schedule.barber, f"A lista de espera tem um cliente interessado em {schedule.date.strftime('%d/%m/%Y')}.")
-            entry.status = "notified"
-            entry.save(update_fields=["status"])
+        avisar_lista_de_espera(schedule)
         return Response({"id": schedule.id, "status": schedule.status})
 
 

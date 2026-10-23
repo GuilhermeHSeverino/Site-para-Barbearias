@@ -2,6 +2,7 @@ from datetime import timedelta
 from rest_framework import serializers
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 
 from .models import Schedule, Vacation, INTERVALO_ENTRE_ATENDIMENTOS_MIN
@@ -56,6 +57,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
         if Vacation.objects.filter(barber=barber, start_date__lte=date, end_date__gte=date).exists():
             raise serializers.ValidationError({"date": "O barbeiro está de férias nesta data."})
 
+        self._verificar_horario(barber, date, start_time, service, instance)
+        return data
+
+    def _verificar_horario(self, barber, date, start_time, service, instance=None):
         # Calculate duration based on service or a default for blocked hours
         if service:
             duration = service.duration.total_seconds() / 60
@@ -92,7 +97,14 @@ class ScheduleSerializer(serializers.ModelSerializer):
                     "Horário conflita com outro agendamento ou bloqueio."
                 )
 
-        return data
+    def _travar_agenda(self, barber, date, start_time, service, instance=None):
+        """Bloqueia a agenda do barbeiro até o fim da transação e confere o conflito de novo.
+
+        Sem isso, duas requisições simultâneas para o mesmo horário poderiam passar pela
+        validação ao mesmo tempo e gravar dois agendamentos.
+        """
+        Barber.objects.select_for_update().get(pk=barber.pk)
+        self._verificar_horario(barber, date, start_time, service, instance)
 
     # 🔥 CREATE — agora aceita agendamento manual do barbeiro
     def create(self, validated_data):
@@ -115,7 +127,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"detail": "Esta conta não possui um perfil de cliente."})
             validated_data['client_name'] = client
 
-        schedule = super().create(validated_data)
+        with transaction.atomic():
+            self._travar_agenda(validated_data['barber'], validated_data['date'], validated_data['start_time'],
+                                validated_data.get('service'))
+            schedule = super().create(validated_data)
 
         from notifications.services import notify_barber, notify_client
         data_agendamento = schedule.date.strftime('%d/%m/%Y')
@@ -157,7 +172,16 @@ class ScheduleSerializer(serializers.ModelSerializer):
         old_status = instance.status
         payment_method = validated_data.pop('payment_method', None)
 
-        instance = super().update(instance, validated_data)
+        if any(campo in validated_data for campo in ('barber', 'start_time', 'service', 'date')):
+            # remarcação: mesma proteção contra duas requisições simultâneas da criação
+            with transaction.atomic():
+                self._travar_agenda(validated_data.get('barber', instance.barber),
+                                    validated_data.get('date', instance.date),
+                                    validated_data.get('start_time', instance.start_time),
+                                    validated_data.get('service', instance.service), instance)
+                instance = super().update(instance, validated_data)
+        else:
+            instance = super().update(instance, validated_data)
 
         if instance.status == "concluido" and old_status != "concluido":
             Finances.objects.create(
@@ -176,8 +200,9 @@ class ScheduleSerializer(serializers.ModelSerializer):
                 )
 
         if instance.status == "cancelado" and old_status != "cancelado":
-            from notifications.services import remover_lembretes
+            from notifications.services import remover_lembretes, avisar_lista_de_espera
             remover_lembretes(instance)
+            avisar_lista_de_espera(instance)
 
         if instance.status == "cancelado" and old_status != "cancelado" and instance.client_name:
             from notifications.services import notify_client
