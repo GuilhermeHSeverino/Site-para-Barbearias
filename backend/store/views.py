@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from django.db import transaction
 from django.db.models import Sum
 from django.utils.timezone import localdate
+
+from app.banco import travar
 from .models import Store
 from .serializers import StoreSerializer
 from client.models import Client
@@ -52,7 +54,7 @@ class StoreSaleView(APIView):
 
         with transaction.atomic():
             try:
-                stock = Stock.objects.select_for_update().select_related("product").get(product_id=product_id)
+                stock = travar(Stock.objects.filter(product_id=product_id)).select_related("product").get()
             except Stock.DoesNotExist:
                 return Response({"detail": "Produto não encontrado no estoque."}, status=404)
 
@@ -152,7 +154,7 @@ class StoreConfirmView(APIView):
 
         with transaction.atomic():
             try:
-                pedido = Store.objects.select_for_update().select_related("stock__product").get(id=pk, barber=barber)
+                pedido = travar(Store.objects.filter(id=pk, barber=barber)).select_related("stock__product").get()
             except Store.DoesNotExist:
                 return Response({"detail": "Pedido não encontrado."}, status=404)
             if pedido.status != "pendente":

@@ -155,7 +155,9 @@ class ScheduleAvailabilityView(APIView):
                 for agendamento in ocupados:
                     ocupado_inicio = minutos(agendamento.start_time)
                     ocupado_fim = minutos(agendamento.end_time)
-                    if inicio < ocupado_fim + INTERVALO_ENTRE_ATENDIMENTOS_MIN and fim > ocupado_inicio:
+                    # a folga só vale depois de outro atendimento; um bloqueio libera o horário seguinte na hora
+                    folga = INTERVALO_ENTRE_ATENDIMENTOS_MIN if agendamento.service_id else 0
+                    if inicio < ocupado_fim + folga and fim > ocupado_inicio:
                         conflita = True
                         break
 

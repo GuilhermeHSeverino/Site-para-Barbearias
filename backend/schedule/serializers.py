@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+from app.banco import travar
+
 from .models import Schedule, Vacation, INTERVALO_ENTRE_ATENDIMENTOS_MIN
 from client.models import Client
 from barber.models import Barber
@@ -105,8 +107,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
             if start_time_obj < break_end and end_time_obj > break_start:
                 raise serializers.ValidationError({"start_time": "O horário coincide com o intervalo do barbeiro."})
 
-        min_interval = timedelta(minutes=INTERVALO_ENTRE_ATENDIMENTOS_MIN)
-
         conflicting = Schedule.objects.filter(
              barber=barber,
              date=date
@@ -115,8 +115,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
         for schedule in conflicting:
             existing_start = timedelta(hours=schedule.start_time.hour, minutes=schedule.start_time.minute)
             existing_end = timedelta(hours=schedule.end_time.hour, minutes=schedule.end_time.minute)
+            # a folga serve para preparar o próximo cliente: só vale entre dois atendimentos, não em bloqueios
+            folga = timedelta(minutes=INTERVALO_ENTRE_ATENDIMENTOS_MIN) if service and schedule.service_id else timedelta(0)
 
-            if (start_time_obj < existing_end + min_interval and end_time_obj > existing_start):
+            if (start_time_obj < existing_end + folga and end_time_obj > existing_start):
                 raise serializers.ValidationError(
                     "Horário conflita com outro agendamento ou bloqueio."
                 )
@@ -127,7 +129,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
         Sem isso, duas requisições simultâneas para o mesmo horário poderiam passar pela
         validação ao mesmo tempo e gravar dois agendamentos.
         """
-        Barber.objects.select_for_update().get(pk=barber.pk)
+        travar(Barber.objects.filter(pk=barber.pk)).get()
         self._verificar_horario(barber, date, start_time, service, instance)
 
     def create(self, validated_data):

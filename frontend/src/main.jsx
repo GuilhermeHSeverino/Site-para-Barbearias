@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
-import LimiteDeErro from "./components/LimiteDeErro.jsx";
+import LimiteDeErro from "./componentes-comuns/LimiteDeErro.jsx";
 
 // service worker usado para mostrar notificações no Chrome do Android
 if ("serviceWorker" in navigator) {
