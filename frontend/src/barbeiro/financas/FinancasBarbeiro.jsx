@@ -42,6 +42,7 @@ export default function FinancasBarbeiro() {
     const [financas, setFinancas] = useState([]);
     const [visiveis, setVisiveis] = useState(10);
     const [faturamento, setFaturamento] = useState(0);
+    const [faturamentoLoja, setFaturamentoLoja] = useState(0);
     const [saidas, setSaidas] = useState(0);
     const [saldo, setSaldo] = useState(0);
     const [linha, setLinha] = useState([]);
@@ -69,6 +70,7 @@ export default function FinancasBarbeiro() {
             setFinancas(dados);
 
             let entradas = 0;
+            let entradasLoja = 0;
             let saidasTotal = 0;
 
             const mapaDias = {};
@@ -81,8 +83,12 @@ export default function FinancasBarbeiro() {
                 if (f.tipo === "entrada") {
                     entradas += valor;
 
+                    // venda da loja = lançamento ligado a um pedido; o resto vem dos atendimentos
+                    const daLoja = Boolean(f.store);
+                    if (daLoja) entradasLoja += valor;
                     const dia = formatarDataISO(f.date);
-                    mapaDias[dia] = (mapaDias[dia] || 0) + valor;
+                    mapaDias[dia] = mapaDias[dia] || { servicos: 0, loja: 0 };
+                    mapaDias[dia][daLoja ? "loja" : "servicos"] += valor;
 
                     const metodo = f.payment_method || "nao_informado";
                     mapaPagamento[metodo] = (mapaPagamento[metodo] || 0) + valor;
@@ -96,6 +102,7 @@ export default function FinancasBarbeiro() {
             });
 
             setFaturamento(entradas);
+            setFaturamentoLoja(entradasLoja);
             setSaidas(saidasTotal);
             setSaldo(entradas - saidasTotal);
 
@@ -109,7 +116,8 @@ export default function FinancasBarbeiro() {
             setBarras(
                 Object.keys(mapaDias).map((dia) => ({
                     dia,
-                    valor: mapaDias[dia],
+                    servicos: mapaDias[dia].servicos,
+                    loja: mapaDias[dia].loja,
                 })),
             );
 
@@ -174,6 +182,11 @@ export default function FinancasBarbeiro() {
                 <div className="card">
                     <p>Faturamento</p>
                     <h2 className="green">{carregando ? "—" : formatar(faturamento)}</h2>
+                    {!carregando && (
+                        <small className="card-detalhe">
+                            Serviços {formatar(faturamento - faturamentoLoja)} · Loja {formatar(faturamentoLoja)}
+                        </small>
+                    )}
                 </div>
 
                 <div className="card">
@@ -216,8 +229,13 @@ export default function FinancasBarbeiro() {
                                 <CartesianGrid stroke="#2a2a2a" />
                                 <XAxis dataKey="dia" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" />
-                                <Tooltip contentStyle={{ background: "#17181a", border: "1px solid #303030" }} />
-                                <Bar dataKey="valor" fill="#22c55e" radius={[6, 6, 0, 0]} />
+                                <Tooltip
+                                    contentStyle={{ background: "#17181a", border: "1px solid #303030" }}
+                                    formatter={(v) => formatar(v)}
+                                />
+                                <Legend />
+                                <Bar dataKey="servicos" name="Serviços" stackId="dia" fill="#22c55e" />
+                                <Bar dataKey="loja" name="Loja" stackId="dia" fill="#3b82f6" radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     )}
