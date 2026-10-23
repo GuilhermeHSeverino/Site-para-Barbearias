@@ -13,11 +13,6 @@ class NovoBarbeiroForm(forms.ModelForm):
     class Meta:
         model = Barber
         fields = ["name", "email", "phone", "senha", "work_start", "work_end", "break_start", "break_end"]
-        labels = {
-            "name": "Nome", "email": "E-mail", "phone": "Telefone",
-            "work_start": "Início do expediente", "work_end": "Fim do expediente",
-            "break_start": "Início do intervalo", "break_end": "Fim do intervalo",
-        }
 
     def clean_email(self):
         email = self.cleaned_data["email"]
