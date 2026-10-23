@@ -247,7 +247,7 @@ class WaitlistCreateView(APIView):
         except (TypeError, ValueError):
             return Response({"detail": "Data inválida."}, status=400)
 
-        if date_value < timezone.now().date():
+        if date_value < timezone.localdate():
             return Response({"detail": "Não é possível entrar na lista de espera para uma data passada."}, status=400)
 
         entry, created = WaitlistEntry.objects.get_or_create(client=client, barber=barber, service=service, date=date_value)
@@ -264,5 +264,6 @@ class WaitlistListView(APIView):
         barber = Barber.objects.filter(user=request.user).first()
         if not barber:
             return Response({"detail": "Apenas barbeiros podem ver a lista de espera."}, status=403)
-        entries = WaitlistEntry.objects.filter(barber=barber, status="pending").select_related("client", "service")
+        # esperas de datas que já passaram não interessam mais
+        entries = WaitlistEntry.objects.filter(barber=barber, status="pending", date__gte=timezone.localdate()).select_related("client", "service")
         return Response([{"id": entry.id, "client": entry.client.name, "service": entry.service.name, "date": entry.date} for entry in entries])

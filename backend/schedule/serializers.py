@@ -42,7 +42,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
         if not all([barber, start_time, date]):
             return data
 
-        if not instance and date < timezone.now().date():
+        if not instance and date < timezone.localdate():
             raise serializers.ValidationError({"date": "Não é possível agendar para uma data passada."})
 
         if not instance:
