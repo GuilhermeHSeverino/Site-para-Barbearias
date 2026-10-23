@@ -35,17 +35,13 @@ class StockRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = StockSerializer
 
 class StockMovementView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # o histórico de movimentações é de uso interno da barbearia
+    permission_classes = [IsBarberOrAdmin]
     queryset = StockMovement.objects.all().order_by("-created_at")
     serializer_class = StockMovementSerializer
 
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsBarberOrAdmin()]
-        return super().get_permissions()
-
 class StockAlertView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsBarberOrAdmin]
 
     def get(self, request):
         # Retorna produtos onde a quantidade em estoque é menor ou igual ao estoque mínimo
