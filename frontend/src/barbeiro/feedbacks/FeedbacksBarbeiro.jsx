@@ -109,7 +109,7 @@ function FeedbacksBarbeiro() {
 
                 <div className="dashboard-card">
                     <span>Nota média</span>
-                    <h2>{notaMedia.toFixed(1)}</h2>
+                    <h2>{notaMedia.toFixed(1).replace(".", ",")}</h2>
                 </div>
 
                 <div className="dashboard-card">

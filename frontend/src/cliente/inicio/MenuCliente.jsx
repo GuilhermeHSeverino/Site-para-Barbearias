@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../../api";
 import "./MenuCliente.css";
 import { notificarNavegador } from "../../utils/notificarNavegador";
+import { formatarDataISO } from "../../utils/formatters";
 
 function MenuCliente() {
     const [agendamentos, setAgendamentos] = useState([]);
@@ -133,11 +134,7 @@ function MenuCliente() {
                 <div>
                     <span>Atendimento mais recente</span>
                     <strong>
-                        {loading
-                            ? "—"
-                            : agendamentos.length
-                              ? new Date(agendamentos[0].date).toLocaleDateString("pt-BR")
-                              : "Ainda não"}
+                        {loading ? "—" : agendamentos.length ? formatarDataISO(agendamentos[0].date) : "Ainda não"}
                     </strong>
                 </div>
                 <div>

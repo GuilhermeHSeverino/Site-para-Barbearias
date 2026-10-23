@@ -4,6 +4,7 @@ import api from "../../api";
 import { ACCESS_TOKEN } from "../../constants";
 import "./financeiro.css";
 import { mensagemDeErro } from "../../utils/mensagemErro";
+import { formatarDataISO } from "../../utils/formatters";
 import MostrarMais from "../../componentes-comuns/MostrarMais";
 import {
     ResponsiveContainer,
@@ -80,7 +81,7 @@ export default function FinancasBarbeiro() {
                 if (f.tipo === "entrada") {
                     entradas += valor;
 
-                    const dia = new Date(f.date).toLocaleDateString("pt-BR");
+                    const dia = formatarDataISO(f.date);
                     mapaDias[dia] = (mapaDias[dia] || 0) + valor;
 
                     const metodo = f.payment_method || "nao_informado";
@@ -100,7 +101,7 @@ export default function FinancasBarbeiro() {
 
             setLinha(
                 saldoRes.data.map((i) => ({
-                    date: new Date(i.date).toLocaleDateString("pt-BR"),
+                    date: formatarDataISO(i.date),
                     saldo: i.saldo_acumulado,
                 })),
             );
@@ -304,7 +305,7 @@ export default function FinancasBarbeiro() {
                         .map((f) => (
                             <div key={f.id} className="item">
                                 <div>
-                                    <p>{new Date(f.date).toLocaleDateString()}</p>
+                                    <p>{formatarDataISO(f.date)}</p>
                                     <small>{f.descricao}</small>
                                 </div>
 

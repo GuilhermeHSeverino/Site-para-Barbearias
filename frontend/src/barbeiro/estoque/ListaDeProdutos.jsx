@@ -1,4 +1,5 @@
 import { estaComEstoqueBaixo } from "./ResumoEstoque";
+import { formatarMoeda } from "../../utils/formatters";
 
 // Produtos do estoque com a quantidade, o alerta de estoque baixo e o botão para registrar entrada ou saída.
 export default function ListaDeProdutos({ produtos, carregando, busca, onMovimentar }) {
@@ -18,7 +19,7 @@ export default function ListaDeProdutos({ produtos, carregando, busca, onMovimen
                         <div key={p.id} className="item com-acao">
                             <div>
                                 <strong>{p.product_name}</strong>
-                                <p>R$ {parseFloat(p.product_price || 0).toFixed(2)}</p>
+                                <p>{formatarMoeda(p.product_price || 0)}</p>
                             </div>
                             <div>
                                 <p>Qtd: {p.quantity}</p>

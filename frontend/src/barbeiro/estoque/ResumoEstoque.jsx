@@ -1,3 +1,5 @@
+import { formatarMoeda } from "../../utils/formatters";
+
 export const estaComEstoqueBaixo = (p) => p.quantity <= (p.product_estoque_minimo ?? 5);
 
 // Cartões com o total de produtos, o valor parado em estoque, os itens em falta e as unidades guardadas.
@@ -14,7 +16,7 @@ export default function ResumoEstoque({ produtos }) {
             </div>
             <div className="dashboard-card">
                 <span>Valor em estoque</span>
-                <h2>R$ {valorTotal.toFixed(2)}</h2>
+                <h2>{formatarMoeda(valorTotal)}</h2>
             </div>
             <div className="dashboard-card">
                 <span>Estoque baixo</span>
