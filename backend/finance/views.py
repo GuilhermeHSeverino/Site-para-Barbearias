@@ -2,7 +2,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAdminUser
 from django.db.models import Sum
-from django.utils.timezone import now
+from django.utils.timezone import localdate
 from datetime import timedelta
 from .models import Finances
 from .serializers import FinancesSerializer
@@ -19,7 +19,7 @@ class IsBarberOrAdmin(BasePermission):
 
 # 🔥 FILTRO DE PERÍODO
 def filtrar_periodo(queryset, periodo):
-    today = now().date()
+    today = localdate()  # data de Brasília, não a do servidor (UTC)
 
     if periodo == 'diario':
         return queryset.filter(date=today)

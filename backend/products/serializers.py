@@ -14,6 +14,11 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = "__all__"
 
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("O preço não pode ser negativo.")
+        return value
+
     def validate(self, data):
         if data.get("custo_total") and not data.get("initial_quantity"):
             raise serializers.ValidationError({"custo_total": "Informe a quantidade comprada para lançar o custo."})

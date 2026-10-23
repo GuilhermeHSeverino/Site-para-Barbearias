@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions
 from .models import Services
 from .serializers import ServicesSerializer
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 class IsBarberOrAdmin(permissions.BasePermission):
@@ -28,6 +29,8 @@ class ServicesCreateListView(generics.ListCreateAPIView):
         barber_id = self.request.query_params.get('barber_id')
 
         if barber_id:
+            if not barber_id.isdigit():
+                raise ValidationError({"barber_id": "Informe um barbeiro válido."})
             return queryset.filter(barber_id=barber_id)
 
         user = self.request.user

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from stock.models import Stock
 from client.models import Client
 from barber.models import Barber
@@ -9,7 +10,8 @@ class Store(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE,related_name='store')
     barber = models.ForeignKey(Barber, on_delete=models.PROTECT, related_name='store_orders', null=True, blank=True)
     quantity_sold = models.IntegerField(default=0)
-    date_of_sale = models.DateField(auto_now_add=True)
+    # data de Brasília (TIME_ZONE), não a do servidor, que fica em UTC
+    date_of_sale = models.DateField(default=timezone.localdate, editable=False)
     status = models.CharField(max_length=12, choices=[('pendente', 'Pendente'), ('entregue', 'Entregue'), ('cancelado', 'Cancelado')], default='pendente')
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='retirada')
 

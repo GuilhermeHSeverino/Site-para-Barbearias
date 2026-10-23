@@ -27,9 +27,32 @@ class ScheduleSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['end_time']
 
-    # 🔥 VALIDAÇÃO (mantida igual)
+    # mudanças de status aceitas; concluído, cancelado e bloqueado não mudam mais
+    TRANSICOES = {
+        "agendado": {"confirmado", "concluido", "cancelado"},
+        "confirmado": {"agendado", "concluido", "cancelado"},
+    }
+
+    def _validar_status(self, data, instance):
+        request = self.context.get("request")
+        if instance is None:
+            if not Barber.objects.filter(user=request.user).exists():
+                data["status"] = "agendado"  # o cliente só cria agendamentos comuns
+            elif data.get("status", "agendado") not in ("agendado", "confirmado", "bloqueado"):
+                raise serializers.ValidationError({"status": "Um novo horário só pode ser agendado, confirmado ou bloqueado."})
+            if data.get("status", "agendado") != "bloqueado" and not data.get("service"):
+                raise serializers.ValidationError({"service": "Escolha um serviço."})
+        elif "status" in data and data["status"] != instance.status:
+            if data["status"] not in self.TRANSICOES.get(instance.status, set()):
+                nomes = dict(Schedule.STATUS_CHOICES)
+                raise serializers.ValidationError({"status": (
+                    f"Um horário {nomes.get(instance.status, instance.status).lower()} não pode passar para "
+                    f"{nomes.get(data['status'], data['status']).lower()}."
+                )})
+
     def validate(self, data):
         instance = self.instance
+        self._validar_status(data, instance)
 
         if instance and not any(field in data for field in ('barber', 'start_time', 'service', 'date')):
             return data

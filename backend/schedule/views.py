@@ -60,6 +60,12 @@ class ScheduleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
         return Schedule.objects.none()
 
+    def perform_destroy(self, instance):
+        # excluir um atendimento apagaria também a receita lançada; ele deve ser cancelado
+        if instance.status != "bloqueado":
+            raise ValidationError({"detail": "Somente bloqueios de horário podem ser excluídos. Para um atendimento, use Cancelar."})
+        instance.delete()
+
 
 class ScheduleClientCancelView(APIView):
     permission_classes = [IsAuthenticated]

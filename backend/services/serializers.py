@@ -9,6 +9,11 @@ class ServicesSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['barber']
 
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("O preço não pode ser negativo.")
+        return value
+
     def validate_duration(self, value):
         # Verifica se o valor é uma string no formato "HH:MM:SS"
         if isinstance(value, str):

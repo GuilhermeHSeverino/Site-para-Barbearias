@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db import transaction
 from django.db.models import Sum
-from django.utils.timezone import now
+from django.utils.timezone import localdate
 from .models import Store
 from .serializers import StoreSerializer
 from client.models import Client
@@ -163,7 +163,7 @@ class StoreConfirmView(APIView):
 
             StockMovement.objects.create(product=pedido.stock.product, type="saida", quantity=pedido.quantity_sold, description="Entrega de pedido da loja")
             pedido.stock.refresh_from_db()
-            Finances.objects.create(store=pedido, barber=barber, tipo="entrada", valor=pedido.stock.product.price * pedido.quantity_sold, date=now().date(), payment_method=payment_method, categoria="outros")
+            Finances.objects.create(store=pedido, barber=barber, tipo="entrada", valor=pedido.stock.product.price * pedido.quantity_sold, date=localdate(), payment_method=payment_method, categoria="outros")
             pedido.status = "entregue"
             pedido.save(update_fields=["status"])
 

@@ -13,6 +13,18 @@ class ClientSerializer(serializers.ModelSerializer):
 
     def get_is_superuser(self, obj):
         return obj.user.is_superuser
+
+    def validate_email(self, value):
+        # o e-mail também é o nome de usuário do login, então não pode repetir em nenhuma conta
+        outros = Client.objects.filter(email__iexact=value)
+        if self.instance:
+            outros = outros.exclude(pk=self.instance.pk)
+        usuario_existente = User.objects.filter(username__iexact=value) | User.objects.filter(email__iexact=value)
+        if self.instance:
+            usuario_existente = usuario_existente.exclude(pk=self.instance.user_id)
+        if outros.exists() or usuario_existente.exists():
+            raise serializers.ValidationError("Este e-mail já está cadastrado.")
+        return value
     
     def create(self, validated_data):
         # Criação do User com a senha fornecida
