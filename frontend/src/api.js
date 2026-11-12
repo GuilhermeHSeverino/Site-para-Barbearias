@@ -22,8 +22,10 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        // No login, 401 significa senha errada, não sessão expirada: a tela mostra o erro
+        const ehLogin = originalRequest.url?.endsWith("/authentication/token/");
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry && !ehLogin) {
             originalRequest._retry = true;
 
             try {
