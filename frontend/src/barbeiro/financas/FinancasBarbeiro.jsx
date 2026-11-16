@@ -36,6 +36,13 @@ const FILTROS = [
     { value: "anual", label: "Anual" },
 ];
 
+// fundo escuro do tooltip com texto claro (o padrão do Recharts é texto escuro)
+const ESTILO_TOOLTIP = {
+    contentStyle: { background: "#17181a", border: "1px solid #303030", borderRadius: 8 },
+    labelStyle: { color: "#f3f4f6", fontWeight: 600 },
+    itemStyle: { color: "#e5e7eb" },
+};
+
 const CORES_PIZZA = ["#22c55e", "#3b82f6", "#facc15", "#ef4444", "#a855f7", "#14b8a6", "#f97316"];
 
 export default function FinancasBarbeiro() {
@@ -212,8 +219,8 @@ export default function FinancasBarbeiro() {
                                 <CartesianGrid stroke="#2a2a2a" />
                                 <XAxis dataKey="date" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" />
-                                <Tooltip contentStyle={{ background: "#17181a", border: "1px solid #303030" }} />
-                                <Line dataKey="saldo" stroke="#22c55e" strokeWidth={2} dot={false} />
+                                <Tooltip {...ESTILO_TOOLTIP} formatter={(v) => formatar(v)} />
+                                <Line dataKey="saldo" name="Saldo" stroke="#22c55e" strokeWidth={2} dot={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     )}
@@ -230,7 +237,7 @@ export default function FinancasBarbeiro() {
                                 <XAxis dataKey="dia" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" />
                                 <Tooltip
-                                    contentStyle={{ background: "#17181a", border: "1px solid #303030" }}
+                                    {...ESTILO_TOOLTIP}
                                     formatter={(v) => formatar(v)}
                                 />
                                 <Legend />
@@ -268,7 +275,7 @@ export default function FinancasBarbeiro() {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ background: "#17181a", border: "1px solid #303030" }}
+                                    {...ESTILO_TOOLTIP}
                                     formatter={(value, name) => [`${value} corte(s)`, name]}
                                 />
                                 <Legend wrapperStyle={{ fontSize: 13, color: "#9ca3af" }} />
