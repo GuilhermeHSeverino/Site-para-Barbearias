@@ -25,7 +25,7 @@ export default function LinhaDoTempo({ carregando, agendamentoNoHorario, onConcl
 
                                         <span className={`agenda-badge ${info.classe}`}>{info.label}</span>
 
-                                        {ag.status === "agendado" && (
+                                        {(ag.status === "agendado" || ag.status === "confirmado") && (
                                             <div className="agenda-slot-acoes">
                                                 <button className="acao-concluir" onClick={() => onConcluir(ag.id)}>
                                                     Concluir

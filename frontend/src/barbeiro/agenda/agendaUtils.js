@@ -21,6 +21,8 @@ export function statusDoAgendamento(status) {
     switch (status?.toLowerCase()) {
         case "concluido":
             return { label: "Concluído", classe: "badge-verde" };
+        case "confirmado":
+            return { label: "Confirmado", classe: "badge-amarelo" };
         case "cancelado":
             return { label: "Cancelado", classe: "badge-vermelho" };
         case "bloqueado":
